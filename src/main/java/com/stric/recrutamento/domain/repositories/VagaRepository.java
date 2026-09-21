@@ -1,0 +1,25 @@
+package com.stric.recrutamento.domain.repositories;
+
+import com.stric.recrutamento.domain.entities.Vaga;
+import com.stric.recrutamento.domain.enums.StatusVaga;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface VagaRepository extends JpaRepository<Vaga, UUID> {
+
+    List<Vaga> findByStatus(StatusVaga status);
+
+    List<Vaga> findByRecrutadorId(UUID recrutadorId);
+
+    @Query("SELECT v FROM Vaga v LEFT JOIN FETCH v.recrutador WHERE v.status = :status ORDER BY v.dataCriacao DESC")
+    List<Vaga> findByStatusWithRecrutador(@Param("status") StatusVaga status);
+
+    @Query("SELECT v FROM Vaga v LEFT JOIN FETCH v.recrutador ORDER BY v.dataCriacao DESC")
+    List<Vaga> findAllWithRecrutador();
+}

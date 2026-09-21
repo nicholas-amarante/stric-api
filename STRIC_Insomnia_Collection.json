@@ -1,0 +1,236 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-15T22:42:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.6.0",
+  "resources": [
+    {
+      "_id": "wrk_stric_api",
+      "parentId": null,
+      "modified": 1726430000000,
+      "created": 1726430000000,
+      "name": "STRIC - API de Recrutamento Ágil",
+      "description": "Coleção de testes para a API REST do Sistema de Triagem e Resumo Inteligente de Currículos",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "env_stric_global",
+      "parentId": "wrk_stric_api",
+      "modified": 1726430000000,
+      "created": 1726430000000,
+      "name": "Ambiente Local",
+      "data": {
+        "baseUrl": "http://localhost:8080/api",
+        "tokenRecrutador": "",
+        "tokenCandidato": "",
+        "vagaId": "",
+        "candidaturaId": ""
+      },
+      "dataPropertyOrder": {
+        "&": ["baseUrl", "tokenRecrutador", "tokenCandidato", "vagaId", "candidaturaId"]
+      },
+      "color": "#7d69cb",
+      "isPrivate": false,
+      "metaSortKey": 1726430000000,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_stric_api",
+      "name": "1. Autenticação",
+      "metaSortKey": 100,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_vagas",
+      "parentId": "wrk_stric_api",
+      "name": "2. Vagas",
+      "metaSortKey": 200,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_candidaturas",
+      "parentId": "wrk_stric_api",
+      "name": "3. Candidaturas & Triagem IA",
+      "metaSortKey": 300,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_register_recrutador",
+      "parentId": "fld_auth",
+      "name": "1.1 Cadastrar Recrutador",
+      "url": "{{ baseUrl }}/auth/register",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Carla Recrutadora\",\n  \"email\": \"carla.recrutadora@empresa.com\",\n  \"senha\": \"senha123456\",\n  \"role\": \"ROLE_RECRUITER\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_register_candidato",
+      "parentId": "fld_auth",
+      "name": "1.2 Cadastrar Candidato",
+      "url": "{{ baseUrl }}/auth/register",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Lucas Silva Santos\",\n  \"email\": \"lucas.silva@email.com\",\n  \"senha\": \"senha123456\",\n  \"role\": \"ROLE_CANDIDATE\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_recrutador",
+      "parentId": "fld_auth",
+      "name": "1.3 Login Recrutador",
+      "url": "{{ baseUrl }}/auth/login",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"carla.recrutadora@empresa.com\",\n  \"senha\": \"senha123456\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_login_candidato",
+      "parentId": "fld_auth",
+      "name": "1.4 Login Candidato",
+      "url": "{{ baseUrl }}/auth/login",
+      "method": "POST",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"lucas.silva@email.com\",\n  \"senha\": \"senha123456\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_me",
+      "parentId": "fld_auth",
+      "name": "1.5 Obter Meus Dados (/me)",
+      "url": "{{ baseUrl }}/auth/me",
+      "method": "GET",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_create_vaga",
+      "parentId": "fld_vagas",
+      "name": "2.1 Criar Vaga (RN01 - Recrutador)",
+      "url": "{{ baseUrl }}/vagas",
+      "method": "POST",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Desenvolvedor Java Backend Sênior\",\n  \"descricao\": \"Atuação no desenvolvimento de microsserviços escaláveis em Spring Boot e arquitetura de nuvem.\",\n  \"requisitosObrigatorios\": [\n    \"Java 21\",\n    \"Spring Boot 3\",\n    \"PostgreSQL\",\n    \"Docker\"\n  ],\n  \"requisitosDesejaveis\": [\n    \"Kubernetes\",\n    \"Spring AI\",\n    \"AWS\"\n  ],\n  \"tempoMinimoExperienciaAnos\": 4\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_vagas_abertas",
+      "parentId": "fld_vagas",
+      "name": "2.2 Listar Vagas Abertas (Público/Candidato)",
+      "url": "{{ baseUrl }}/vagas",
+      "method": "GET",
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_vaga_id",
+      "parentId": "fld_vagas",
+      "name": "2.3 Obter Detalhes da Vaga por ID",
+      "url": "{{ baseUrl }}/vagas/{{ vagaId }}",
+      "method": "GET",
+      "_type": "request"
+    },
+    {
+      "_id": "req_submeter_candidatura",
+      "parentId": "fld_candidaturas",
+      "name": "3.1 Submeter Currículo PDF (RN02/RN03 - 202 Accepted)",
+      "url": "{{ baseUrl }}/candidaturas/vagas/{{ vagaId }}/submeter",
+      "method": "POST",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenCandidato }}" }
+      ],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "arquivo",
+            "type": "file",
+            "description": "Selecione um arquivo .pdf genuíno de currículo"
+          }
+        ]
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_list_candidatos_vaga",
+      "parentId": "fld_candidaturas",
+      "name": "3.2 Listar Candidatos da Vaga (LGPD Mascarado - Recrutador)",
+      "url": "{{ baseUrl }}/candidaturas/vagas/{{ vagaId }}",
+      "method": "GET",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_candidatura_detalhe",
+      "parentId": "fld_candidaturas",
+      "name": "3.3 Obter Detalhes da Candidatura",
+      "url": "{{ baseUrl }}/candidaturas/{{ candidaturaId }}",
+      "method": "GET",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_selecionar_entrevista",
+      "parentId": "fld_candidaturas",
+      "name": "3.4 Selecionar para Entrevista & Liberar Contato (LGPD)",
+      "url": "{{ baseUrl }}/candidaturas/{{ candidaturaId }}/selecionar-entrevista",
+      "method": "PATCH",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"justificativa\": \"Candidato possui excelente aderência técnica com score de 90% na triagem por IA.\"\n}"
+      },
+      "_type": "request"
+    },
+    {
+      "_id": "req_download_pdf",
+      "parentId": "fld_candidaturas",
+      "name": "3.5 Download do Currículo PDF",
+      "url": "{{ baseUrl }}/candidaturas/{{ candidaturaId }}/download-pdf",
+      "method": "GET",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenRecrutador }}" }
+      ],
+      "_type": "request"
+    },
+    {
+      "_id": "req_minhas_candidaturas",
+      "parentId": "fld_candidaturas",
+      "name": "3.6 Minhas Candidaturas (Candidato)",
+      "url": "{{ baseUrl }}/candidaturas/minhas",
+      "method": "GET",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ tokenCandidato }}" }
+      ],
+      "_type": "request"
+    }
+  ]
+}

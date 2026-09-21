@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: api-stric
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+      enabled: true
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Configurações do JWT
+jwt:
+  # Chave secreta HMAC-SHA de pelo menos 256 bits (32+ caracteres)
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  # Expiração em milissegundos (ex: 86400000 = 24 horas)
+  expiration: 86400000
+
+# Armazenamento de Arquivos Local Seguro
+storage:
+  upload-dir: ${STORAGE_UPLOAD_DIR:./storage/uploads/curriculos}
+
+# Integração com Inteligência Artificial (Google Gemini)
+ai:
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-1.5-flash}
+    endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta/models}
+    timeout-seconds: 45
+    # Se true e nenhuma chave for provida, executa modo simulado inteligente para desenvolvimento/testes
+    mock-fallback-enabled: true
+
+# Documentação OpenAPI / Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
