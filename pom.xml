@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.stric</groupId>
-    <artifactId>recrutamento-api</artifactId>
+    <artifactId>stric-api</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>API_STRIC</name>
+    <name>stric-api</name>
     <description>Sistema de Triagem e Resumo Inteligente de Currículos (Recrutamento Ágil)</description>
 
     <properties>
