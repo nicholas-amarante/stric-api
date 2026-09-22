@@ -1,4 +1,4 @@
-﻿package com.stric.recrutamento.service;
+package com.stric.recrutamento.service;
 
 import com.stric.recrutamento.config.JwtTokenProvider;
 import com.stric.recrutamento.domain.entities.Usuario;

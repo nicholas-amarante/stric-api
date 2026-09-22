@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
 /**
  * Serviço de triagem e análise de currículos por Inteligência Artificial (Google Gemini).
  * Implementa isolamento rigoroso do texto contra ataques de Prompt Injection e retorno estruturado em JSON Schema.
+ *
+ * NOTA: O modo de simulação/fallback inteligente foi DESATIVADO.
+ * A API do Google Gemini é obrigatória para o funcionamento do sistema.
  */
 @Slf4j
 @Service
@@ -35,26 +38,18 @@ public class AiScreeningService {
 
     /**
      * Executa a análise do currículo frente aos requisitos da vaga via IA.
+     * A chave da API Gemini é OBRIGATÓRIA — não há mais fallback de simulação.
      */
     public AnaliseIAResultDTO screenResume(Vaga vaga, String curriculoTexto) {
         String prompt = buildAntiInjectionPrompt(vaga, curriculoTexto);
 
-        if (StringUtils.hasText(aiProperties.getApiKey())) {
-            try {
-                return callGeminiApi(prompt);
-            } catch (Exception e) {
-                log.error("Erro ao chamar API do Google Gemini: {}. Tentando fallback se habilitado...", e.getMessage());
-                if (aiProperties.isMockFallbackEnabled()) {
-                    return generateIntelligentFallback(vaga, curriculoTexto);
-                }
-                throw new BusinessException("Falha na comunicação com a API de IA: " + e.getMessage(), e);
-            }
-        } else if (aiProperties.isMockFallbackEnabled()) {
-            log.warn("Nenhuma GEMINI_API_KEY configurada. Utilizando mecanismo inteligente de simulação de IA para testes.");
-            return generateIntelligentFallback(vaga, curriculoTexto);
-        } else {
-            throw new BusinessException("A chave da API do Google Gemini (GEMINI_API_KEY) não foi configurada.");
+        if (!StringUtils.hasText(aiProperties.getApiKey())) {
+            throw new BusinessException(
+                    "A chave da API do Google Gemini (GEMINI_API_KEY) não foi configurada. " +
+                    "Configure a variável de ambiente GEMINI_API_KEY para habilitar a triagem por IA.");
         }
+
+        return callGeminiApi(prompt);
     }
 
     /**
@@ -170,10 +165,18 @@ public class AiScreeningService {
         return trimmed.trim();
     }
 
-    /**
-     * Mecanismo de simulação inteligente de IA quando nenhuma chave está configurada.
-     * Calcula aderência real com base em correspondência de termos e experiência detectada.
-     */
+    // ==========================================================================================
+    // MODO DE SIMULAÇÃO / FALLBACK INTELIGENTE — DESATIVADO
+    //
+    // O código abaixo foi comentado intencionalmente. Anteriormente, quando nenhuma chave de API
+    // do Google Gemini estava configurada, o sistema utilizava este algoritmo local para simular
+    // a análise de IA calculando a aderência por correspondência de palavras-chave.
+    //
+    // Agora o sistema exige obrigatoriamente a API real do Google Gemini.
+    // O código foi mantido como referência e documentação.
+    // ==========================================================================================
+
+    /*
     public AnaliseIAResultDTO generateIntelligentFallback(Vaga vaga, String curriculoTexto) {
         String texto = curriculoTexto != null ? curriculoTexto.toLowerCase() : "";
 
@@ -188,7 +191,7 @@ public class AiScreeningService {
             for (String req : vaga.getRequisitosObrigatorios()) {
                 if (containsAnyWord(texto, req.toLowerCase())) {
                     atendidos.add(req);
-                    matchedReqs += 2; // Peso maior para obrigatórios
+                    matchedReqs += 2;
                 } else {
                     atencao.add("Requisito obrigatório não evidenciado: " + req);
                 }
@@ -206,13 +209,11 @@ public class AiScreeningService {
             }
         }
 
-        // Extração de dados de contato e experiência por Regex
         String email = extractRegex(curriculoTexto, "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}", "candidato@email.com");
         String telefone = extractRegex(curriculoTexto, "(\\+?\\d{1,3})?\\s*\\(?\\d{2}\\)?\\s*\\d{4,5}[-.\\s]?\\d{4}", "(11) 98765-4321");
         int anosExp = estimateExperienceYears(curriculoTexto);
         String formacao = detectEducation(curriculoTexto);
 
-        // Cálculo do Score
         int score = 50;
         if (totalReqs > 0) {
             score = Math.min(100, Math.max(10, (matchedReqs * 100) / (Math.max(1, totalReqs * 2))));
@@ -290,4 +291,5 @@ public class AiScreeningService {
         if (lower.contains("bacharel") || lower.contains("superior") || lower.contains("gradua")) return "Ensino Superior";
         return "Ensino Superior Completo";
     }
+    */
 }

@@ -11,6 +11,7 @@ public class AiProperties {
 
     /**
      * Chave de API do Google Gemini.
+     * Carregada exclusivamente via variável de ambiente GEMINI_API_KEY.
      */
     private String apiKey = "";
 
@@ -29,8 +30,5 @@ public class AiProperties {
      */
     private int timeoutSeconds = 45;
 
-    /**
-     * Se true, caso nenhuma API key válida esteja configurada, usa gerador inteligente de teste.
-     */
-    private boolean mockFallbackEnabled = true;
+    // REMOVIDO: mockFallbackEnabled — O sistema agora exige obrigatoriamente a API do Gemini.
 }

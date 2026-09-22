@@ -1,4 +1,4 @@
-﻿package com.stric.recrutamento.dto.auth;
+package com.stric.recrutamento.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;

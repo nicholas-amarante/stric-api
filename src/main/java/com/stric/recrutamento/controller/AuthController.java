@@ -1,4 +1,4 @@
-﻿package com.stric.recrutamento.controller;
+package com.stric.recrutamento.controller;
 
 import com.stric.recrutamento.dto.auth.AuthResponse;
 import com.stric.recrutamento.dto.auth.LoginRequest;

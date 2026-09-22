@@ -32,3 +32,11 @@ target/
 ### Application Uploads ###
 storage/uploads/
 *.log
+
+### Tesseract OCR Training Data (grandes, ~10-30MB cada) ###
+tessdata/*.traineddata
+
+### Variáveis de ambiente e chaves de API ###
+.env
+.env.local
+.env.production

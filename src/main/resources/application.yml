@@ -1,4 +1,4 @@
-spring:
+﻿spring:
   application:
     name: api-stric
   profiles:
@@ -29,12 +29,17 @@ storage:
 # Integração com Inteligência Artificial (Google Gemini)
 ai:
   gemini:
-    api-key: ${GEMINI_API_KEY:}
+    # A chave da API é carregada EXCLUSIVAMENTE por variável de ambiente.
+    # Nunca insira a chave diretamente neste arquivo.
+    api-key: ${GEMINI_API_KEY}
     model: ${GEMINI_MODEL:gemini-1.5-flash}
     endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta/models}
     timeout-seconds: 45
-    # Se true e nenhuma chave for provida, executa modo simulado inteligente para desenvolvimento/testes
-    mock-fallback-enabled: true
+
+# Configuração do Tesseract OCR para PDFs escaneados
+ocr:
+  tessdata-path: ${TESSDATA_PREFIX:./tessdata}
+  language: ${OCR_LANGUAGE:por+eng}
 
 # Documentação OpenAPI / Swagger
 springdoc:
