@@ -20,9 +20,9 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> 
     @Query("SELECT c FROM Candidatura c " +
            "LEFT JOIN FETCH c.candidato " +
            "LEFT JOIN FETCH c.vaga " +
-           "LEFT JOIN FETCH c.analiseIA " +
+           "LEFT JOIN FETCH c.analiseIA a " +
            "WHERE c.vaga.id = :vagaId " +
-           "ORDER BY c.analiseIA.scoreAderencia DESC NULLS LAST, c.dataSubmissao DESC")
+           "ORDER BY a.scoreAderencia DESC NULLS LAST, c.dataSubmissao DESC")
     List<Candidatura> findByVagaIdWithDetails(@Param("vagaId") UUID vagaId);
 
     @Query("SELECT c FROM Candidatura c " +

@@ -94,8 +94,9 @@ public class VagaService {
     }
 
     @Transactional(readOnly = true)
-    public List<VagaResponseDTO> listarVagasAbertas() {
-        return vagaRepository.findByStatusWithRecrutador(StatusVaga.ABERTA).stream()
+    public List<VagaResponseDTO> listarVagasAbertas(String search, Integer maxExperience) {
+        String searchTerm = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        return vagaRepository.findVagasAbertasComFiltro(StatusVaga.ABERTA, searchTerm, maxExperience).stream()
                 .map(VagaResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }

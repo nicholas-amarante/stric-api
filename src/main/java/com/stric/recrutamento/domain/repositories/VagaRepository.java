@@ -22,4 +22,13 @@ public interface VagaRepository extends JpaRepository<Vaga, UUID> {
 
     @Query("SELECT v FROM Vaga v LEFT JOIN FETCH v.recrutador ORDER BY v.dataCriacao DESC")
     List<Vaga> findAllWithRecrutador();
+
+    @Query(value = "SELECT * FROM vagas v " +
+           "WHERE v.status = :#{#status.name()} " +
+           "AND (:search IS NULL OR LOWER(v.titulo) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(v.descricao) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(v.requisitos_obrigatorios) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(v.requisitos_desejaveis) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:maxExperience IS NULL OR v.tempo_minimo_experiencia_anos <= :maxExperience) " +
+           "ORDER BY v.data_criacao DESC", nativeQuery = true)
+    List<Vaga> findVagasAbertasComFiltro(@Param("status") StatusVaga status, 
+                                         @Param("search") String search, 
+                                         @Param("maxExperience") Integer maxExperience);
 }

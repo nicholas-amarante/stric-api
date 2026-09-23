@@ -38,9 +38,11 @@ public class VagaController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar vagas abertas", description = "Lista todas as vagas de emprego ativas com status ABERTA.")
-    public ResponseEntity<ApiResponse<List<VagaResponseDTO>>> listarVagasAbertas() {
-        List<VagaResponseDTO> vagas = vagaService.listarVagasAbertas();
+    @Operation(summary = "Listar vagas abertas", description = "Lista todas as vagas de emprego ativas com status ABERTA. Permite filtragem por termo de busca e experiǦncia mǭxima.")
+    public ResponseEntity<ApiResponse<List<VagaResponseDTO>>> listarVagasAbertas(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer maxExperience) {
+        List<VagaResponseDTO> vagas = vagaService.listarVagasAbertas(search, maxExperience);
         return ResponseEntity.ok(ApiResponse.ok(vagas));
     }
 

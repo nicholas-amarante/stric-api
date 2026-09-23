@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Resposta imediata HTTP 202 (Accepted) do upload de currículo (RN03).
@@ -18,6 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UploadResponseDTO {
 
+    @JsonProperty("id")
     private UUID candidaturaId;
     private UUID vagaId;
     private String tituloVaga;
