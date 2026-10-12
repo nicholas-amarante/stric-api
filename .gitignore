@@ -1,10 +1,38 @@
-target/
+# Compiled class files
+*.class
+
+# Log files
+*.log
+error.log
+hs_err_pid*
+replay_pid*
+
+# Package Files (except maven-wrapper.jar)
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 !.mvn/wrapper/maven-wrapper.jar
+
+# Maven target
+target/
 !**/src/main/**/target/
 !**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
 
-### STS ###
+### STS / Eclipse ###
 .apt_generated
+.apt_generated_tests
 .classpath
 .factorypath
 .project
@@ -13,10 +41,11 @@ target/
 .sts4-userId
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -29,9 +58,16 @@ target/
 ### VS Code ###
 .vscode/
 
-### Application Uploads ###
-storage/uploads/
-*.log
+### Operating System Files ###
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+### Application Uploads & Storage ###
+storage/
+uploads/
 
 ### Tesseract OCR Training Data (grandes, ~10-30MB cada) ###
 tessdata/*.traineddata
@@ -40,3 +76,12 @@ tessdata/*.traineddata
 .env
 .env.local
 .env.production
+.env.*
+
+### Temporary test and diagnostic scripts ###
+Test*.java
+Db*.java
+Db*.class
+*.tmp
+*.bak
+*.swp
