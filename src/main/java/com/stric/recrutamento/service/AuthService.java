@@ -10,7 +10,6 @@ import com.stric.recrutamento.dto.auth.UpdateProfileRequest;
 import com.stric.recrutamento.dto.auth.UsuarioDTO;
 import com.stric.recrutamento.exception.BusinessException;
 import com.stric.recrutamento.util.SecurityUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,13 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final SecurityUtils securityUtils;
+
+    public AuthService(UsuarioRepository usuarioRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtTokenProvider jwtTokenProvider,
+                       SecurityUtils securityUtils) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.securityUtils = securityUtils;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {

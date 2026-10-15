@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,11 +20,14 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/vagas")
-@RequiredArgsConstructor
 @Tag(name = "2. Gestão de Vagas", description = "Endpoints para cadastro, edição, consulta e controle de status de vagas")
 public class VagaController {
 
     private final VagaService vagaService;
+
+    public VagaController(VagaService vagaService) {
+        this.vagaService = vagaService;
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('RECRUITER')")

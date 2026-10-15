@@ -1,8 +1,10 @@
-﻿spring:
+spring:
   application:
     name: api-stric
   profiles:
     active: dev
+  jpa:
+    open-in-view: false
   servlet:
     multipart:
       max-file-size: 5MB

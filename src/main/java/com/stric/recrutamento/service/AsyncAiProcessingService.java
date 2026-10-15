@@ -8,7 +8,6 @@ import com.stric.recrutamento.domain.repositories.AnaliseIARepository;
 import com.stric.recrutamento.domain.repositories.CandidaturaRepository;
 import com.stric.recrutamento.dto.ia.AnaliseIAResultDTO;
 import com.stric.recrutamento.dto.ia.DadosExtraidosDTO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AsyncAiProcessingService {
 
     private final CandidaturaRepository candidaturaRepository;
@@ -30,6 +28,18 @@ public class AsyncAiProcessingService {
     private final PdfExtractorService pdfExtractorService;
     private final AiScreeningService aiScreeningService;
     private final ObjectMapper objectMapper;
+
+    public AsyncAiProcessingService(CandidaturaRepository candidaturaRepository,
+                                    AnaliseIARepository analiseIARepository,
+                                    PdfExtractorService pdfExtractorService,
+                                    AiScreeningService aiScreeningService,
+                                    ObjectMapper objectMapper) {
+        this.candidaturaRepository = candidaturaRepository;
+        this.analiseIARepository = analiseIARepository;
+        this.pdfExtractorService = pdfExtractorService;
+        this.aiScreeningService = aiScreeningService;
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Executa o pipeline de IA em segundo plano de forma não bloqueante.

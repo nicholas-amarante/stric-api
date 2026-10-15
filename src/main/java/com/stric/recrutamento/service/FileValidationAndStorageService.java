@@ -4,7 +4,6 @@ import com.stric.recrutamento.config.StorageProperties;
 import com.stric.recrutamento.exception.FileValidationException;
 import com.stric.recrutamento.exception.ResourceNotFoundException;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -27,10 +26,13 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FileValidationAndStorageService {
 
     private final StorageProperties storageProperties;
+
+    public FileValidationAndStorageService(StorageProperties storageProperties) {
+        this.storageProperties = storageProperties;
+    }
 
     // Magic Bytes do formato PDF: "%PDF-" correspondente em ASCII aos bytes 0x25, 0x50, 0x44, 0x46, 0x2D
     private static final byte[] PDF_MAGIC_BYTES = new byte[]{0x25, 0x50, 0x44, 0x46, 0x2D};

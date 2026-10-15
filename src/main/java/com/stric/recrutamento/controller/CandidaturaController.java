@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,12 +27,15 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/candidaturas")
-@RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
 @Tag(name = "3. Candidaturas & Triagem IA", description = "Endpoints de submissão de currículo, triagem assíncrona por IA, mascaramento LGPD e seleção")
 public class CandidaturaController {
 
     private final CandidaturaService candidaturaService;
+
+    public CandidaturaController(CandidaturaService candidaturaService) {
+        this.candidaturaService = candidaturaService;
+    }
 
     @PostMapping(value = "/vagas/{vagaId}/submeter", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('CANDIDATE')")

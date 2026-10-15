@@ -2,7 +2,6 @@ package com.stric.recrutamento.service;
 
 import com.stric.recrutamento.config.OcrProperties;
 import com.stric.recrutamento.exception.FileValidationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -30,10 +29,13 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PdfExtractorService {
 
     private final OcrProperties ocrProperties;
+
+    public PdfExtractorService(OcrProperties ocrProperties) {
+        this.ocrProperties = ocrProperties;
+    }
 
     /** Número mínimo de caracteres para considerar que o PDF tem texto legível */
     private static final int MIN_TEXT_THRESHOLD = 30;

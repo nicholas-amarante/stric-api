@@ -5,7 +5,6 @@ import com.stric.recrutamento.domain.enums.Role;
 import com.stric.recrutamento.domain.enums.StatusCandidatura;
 import com.stric.recrutamento.domain.enums.StatusVaga;
 import com.stric.recrutamento.domain.repositories.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +23,6 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
@@ -34,6 +32,22 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final AuditoriaAcessoContatoRepository auditoriaRepository;
     private final PasswordEncoder passwordEncoder;
     private final StorageProperties storageProperties;
+
+    public DatabaseSeeder(UsuarioRepository usuarioRepository,
+                          VagaRepository vagaRepository,
+                          CandidaturaRepository candidaturaRepository,
+                          AnaliseIARepository analiseIARepository,
+                          AuditoriaAcessoContatoRepository auditoriaRepository,
+                          PasswordEncoder passwordEncoder,
+                          StorageProperties storageProperties) {
+        this.usuarioRepository = usuarioRepository;
+        this.vagaRepository = vagaRepository;
+        this.candidaturaRepository = candidaturaRepository;
+        this.analiseIARepository = analiseIARepository;
+        this.auditoriaRepository = auditoriaRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.storageProperties = storageProperties;
+    }
 
     @Override
     @Transactional

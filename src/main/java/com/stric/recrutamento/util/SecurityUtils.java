@@ -5,16 +5,18 @@ import com.stric.recrutamento.domain.enums.Role;
 import com.stric.recrutamento.domain.repositories.UsuarioRepository;
 import com.stric.recrutamento.exception.ResourceNotFoundException;
 import com.stric.recrutamento.exception.UnauthorizedAccessException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class SecurityUtils {
 
     private final UsuarioRepository usuarioRepository;
+
+    public SecurityUtils(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     public String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

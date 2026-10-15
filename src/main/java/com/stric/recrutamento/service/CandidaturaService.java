@@ -20,7 +20,6 @@ import com.stric.recrutamento.exception.ResourceNotFoundException;
 import com.stric.recrutamento.exception.UnauthorizedAccessException;
 import com.stric.recrutamento.service.FileValidationAndStorageService.StoredFileResult;
 import com.stric.recrutamento.util.SecurityUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -37,7 +36,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CandidaturaService {
 
     private final CandidaturaRepository candidaturaRepository;
@@ -47,6 +45,22 @@ public class CandidaturaService {
     private final AsyncAiProcessingService asyncAiProcessingService;
     private final DataMaskingService dataMaskingService;
     private final SecurityUtils securityUtils;
+
+    public CandidaturaService(CandidaturaRepository candidaturaRepository,
+                              VagaRepository vagaRepository,
+                              AuditoriaAcessoContatoRepository auditoriaRepository,
+                              FileValidationAndStorageService fileStorageService,
+                              AsyncAiProcessingService asyncAiProcessingService,
+                              DataMaskingService dataMaskingService,
+                              SecurityUtils securityUtils) {
+        this.candidaturaRepository = candidaturaRepository;
+        this.vagaRepository = vagaRepository;
+        this.auditoriaRepository = auditoriaRepository;
+        this.fileStorageService = fileStorageService;
+        this.asyncAiProcessingService = asyncAiProcessingService;
+        this.dataMaskingService = dataMaskingService;
+        this.securityUtils = securityUtils;
+    }
 
     /**
      * Submete a candidatura com upload de PDF e inicia a triagem de IA em segundo plano (RN02, RN03, RN05).

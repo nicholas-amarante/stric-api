@@ -8,7 +8,6 @@ import com.stric.recrutamento.domain.entities.Vaga;
 import com.stric.recrutamento.dto.ia.AnaliseIAResultDTO;
 import com.stric.recrutamento.dto.ia.DadosExtraidosDTO;
 import com.stric.recrutamento.exception.BusinessException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -29,12 +28,17 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AiScreeningService {
 
     private final AiProperties aiProperties;
     private final RestTemplate aiRestTemplate;
     private final ObjectMapper objectMapper;
+
+    public AiScreeningService(AiProperties aiProperties, RestTemplate aiRestTemplate, ObjectMapper objectMapper) {
+        this.aiProperties = aiProperties;
+        this.aiRestTemplate = aiRestTemplate;
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Executa a análise do currículo frente aos requisitos da vaga via IA.

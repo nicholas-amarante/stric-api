@@ -12,7 +12,6 @@ import com.stric.recrutamento.exception.BusinessException;
 import com.stric.recrutamento.exception.ResourceNotFoundException;
 import com.stric.recrutamento.exception.UnauthorizedAccessException;
 import com.stric.recrutamento.util.SecurityUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +22,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class VagaService {
 
     private final VagaRepository vagaRepository;
     private final SecurityUtils securityUtils;
+
+    public VagaService(VagaRepository vagaRepository, SecurityUtils securityUtils) {
+        this.vagaRepository = vagaRepository;
+        this.securityUtils = securityUtils;
+    }
 
     @Transactional
     public VagaResponseDTO criarVaga(VagaCreateDTO dto) {
