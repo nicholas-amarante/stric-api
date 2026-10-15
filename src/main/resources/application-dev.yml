@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   config:
     activate:
       on-profile: dev
@@ -14,7 +14,6 @@
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 logging:
   level:

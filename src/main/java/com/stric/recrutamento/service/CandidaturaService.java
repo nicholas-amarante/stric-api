@@ -87,8 +87,18 @@ public class CandidaturaService {
         log.info("Candidatura registrada: ID={}, Candidato={}, Vaga={}",
                 candidatura.getId(), candidato.getEmail(), vaga.getTitulo());
 
-        // RN03: Dispara o pipeline assíncrono de IA
-        asyncAiProcessingService.processarCurriculoAssincrono(candidatura.getId());
+        // RN03: Dispara o pipeline assíncrono de IA após a efetivação (commit) da transação
+        final UUID candidaturaId = candidatura.getId();
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    asyncAiProcessingService.processarCurriculoAssincrono(candidaturaId);
+                }
+            });
+        } else {
+            asyncAiProcessingService.processarCurriculoAssincrono(candidaturaId);
+        }
 
         // Resposta imediata HTTP 202 com status EM_ANALISE
         return UploadResponseDTO.builder()

@@ -93,9 +93,6 @@ public class AsyncAiProcessingService {
         } catch (Exception ex) {
             log.error("[Async-AI] Falha crítica durante o processamento da IA para Candidatura ID: {}", candidaturaId, ex);
 
-            candidatura.setStatus(StatusCandidatura.ERRO_PROCESSAMENTO);
-            candidaturaRepository.save(candidatura);
-
             AnaliseIA analiseErro = AnaliseIA.builder()
                     .candidatura(candidatura)
                     .scoreAderencia(0)
@@ -105,6 +102,9 @@ public class AsyncAiProcessingService {
                     .build();
 
             analiseIARepository.save(analiseErro);
+            candidatura.setAnaliseIA(analiseErro);
+            candidatura.setStatus(StatusCandidatura.ERRO_PROCESSAMENTO);
+            candidaturaRepository.save(candidatura);
         }
     }
 }

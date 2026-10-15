@@ -56,9 +56,9 @@ Ao iniciar com o banco de dados vazio, o sistema popula automaticamente dados re
 ## 🛠️ Como Executar a Aplicação
 
 ### 1. Pré-requisitos
-- Java 21 JDK instalado e configurado no PATH
-- Maven 3.9+ instalado
+- Java 21 JDK (ou superior) configurado no PATH
 - Docker & Docker Compose (para subir a instância do PostgreSQL)
+- *Obs:* Não é necessário instalar o Maven globalmente, pois o projeto já inclui o Maven Wrapper (`mvnw` / `mvnw.cmd`).
 
 ### 2. Subir o Banco de Dados (PostgreSQL)
 O container está mapeado para a porta **5438** do host (para não disputar com a porta 5432 de bancos locais):
@@ -67,20 +67,34 @@ docker-compose up -d
 ```
 
 ### 3. Configurar Variáveis de Ambiente (Opcional)
-Defina no ambiente ou no `application.yml` / `application-dev.yml`:
-- `GEMINI_API_KEY`: Chave da API do Google Gemini (se omitida, a aplicação utiliza mock inteligente determinístico para desenvolvimento).
+Defina no ambiente ou no arquivo `.env` (na raiz do projeto):
+- `GEMINI_API_KEY`: Chave da API do Google Gemini.
 - `DB_URL`: `jdbc:postgresql://localhost:5438/stric_db`
 - `DB_USERNAME`: `postgres`
 - `DB_PASSWORD`: `postgres`
 
 ### 4. Compilar e Executar
-```bash
+
+#### Via Terminal (PowerShell / Windows):
+```powershell
 # Executar a suíte de testes unitários
-mvn test
+.\mvnw.cmd test
 
 # Iniciar a aplicação Spring Boot
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
+
+#### Via Terminal (Linux / macOS):
+```bash
+# Executar a suíte de testes unitários
+./mvnw test
+
+# Iniciar a aplicação Spring Boot
+./mvnw spring-boot:run
+```
+
+#### Via IDE (VS Code / Antigravity IDE):
+Pressione `F5` ou selecione o profile **StricApiApplication (dev)** na aba *Run & Debug*.
 
 A API estará acessível em: `http://localhost:8080`.
 
