@@ -18,7 +18,7 @@
     <description>Sistema de Triagem e Resumo Inteligente de Curriculos (Recrutamento Agil)</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <lombok.version>1.18.48</lombok.version>
         <jjwt.version>0.12.6</jjwt.version>
         <pdfbox.version>3.0.3</pdfbox.version>

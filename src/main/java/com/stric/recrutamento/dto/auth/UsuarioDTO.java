@@ -2,18 +2,13 @@ package com.stric.recrutamento.dto.auth;
 
 import com.stric.recrutamento.domain.entities.Usuario;
 import com.stric.recrutamento.domain.enums.Role;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class UsuarioDTO {
 
     private UUID id;
@@ -21,6 +16,18 @@ public class UsuarioDTO {
     private String email;
     private Role role;
     private LocalDateTime dataCriacao;
+
+    public UsuarioDTO() {
+    }
+
+    @Builder
+    public UsuarioDTO(UUID id, String nome, String email, Role role, LocalDateTime dataCriacao) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.role = role;
+        this.dataCriacao = dataCriacao;
+    }
 
     public static UsuarioDTO fromEntity(Usuario usuario) {
         if (usuario == null) return null;

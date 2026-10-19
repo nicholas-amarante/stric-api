@@ -18,4 +18,7 @@ public class StorageProperties {
      * Tamanho máximo permitido em bytes (padrão 5MB = 5 * 1024 * 1024).
      */
     private long maxFileSize = 5 * 1024 * 1024;
+
+    public StorageProperties() {
+    }
 }

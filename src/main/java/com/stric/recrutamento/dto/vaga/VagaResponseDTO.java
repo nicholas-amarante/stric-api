@@ -3,19 +3,14 @@ package com.stric.recrutamento.dto.vaga;
 import com.stric.recrutamento.domain.entities.Vaga;
 import com.stric.recrutamento.domain.enums.StatusVaga;
 import com.stric.recrutamento.dto.auth.UsuarioDTO;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class VagaResponseDTO {
 
     private UUID id;
@@ -28,6 +23,27 @@ public class VagaResponseDTO {
     private UsuarioDTO recrutador;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
+
+    public VagaResponseDTO() {
+    }
+
+    @Builder
+    public VagaResponseDTO(UUID id, String titulo, String descricao,
+                           List<String> requisitosObrigatorios, List<String> requisitosDesejaveis,
+                           Integer tempoMinimoExperienciaAnos, StatusVaga status,
+                           UsuarioDTO recrutador, LocalDateTime dataCriacao,
+                           LocalDateTime dataAtualizacao) {
+        this.id = id;
+        this.titulo = titulo;
+        this.descricao = descricao;
+        this.requisitosObrigatorios = requisitosObrigatorios;
+        this.requisitosDesejaveis = requisitosDesejaveis;
+        this.tempoMinimoExperienciaAnos = tempoMinimoExperienciaAnos;
+        this.status = status;
+        this.recrutador = recrutador;
+        this.dataCriacao = dataCriacao;
+        this.dataAtualizacao = dataAtualizacao;
+    }
 
     public static VagaResponseDTO fromEntity(Vaga vaga) {
         if (vaga == null) return null;

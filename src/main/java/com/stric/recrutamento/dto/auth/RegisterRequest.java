@@ -5,15 +5,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "O nome é obrigatório")
@@ -31,4 +26,15 @@ public class RegisterRequest {
 
     @NotNull(message = "O perfil (role) é obrigatório (ROLE_RECRUITER ou ROLE_CANDIDATE)")
     private Role role;
+
+    public RegisterRequest() {
+    }
+
+    @Builder
+    public RegisterRequest(String nome, String email, String senha, Role role) {
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.role = role;
+    }
 }

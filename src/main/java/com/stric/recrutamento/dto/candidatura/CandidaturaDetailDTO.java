@@ -5,10 +5,8 @@ import com.stric.recrutamento.domain.enums.StatusCandidatura;
 import com.stric.recrutamento.dto.auth.UsuarioDTO;
 import com.stric.recrutamento.dto.ia.AnaliseIAResponseDTO;
 import com.stric.recrutamento.dto.vaga.VagaResponseDTO;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,8 +19,6 @@ import java.util.stream.Collectors;
  */
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CandidaturaDetailDTO {
 
     private UUID id;
@@ -35,6 +31,26 @@ public class CandidaturaDetailDTO {
     private LocalDateTime dataAtualizacao;
     private AnaliseIAResponseDTO analiseIA;
     private List<AuditoriaResponseDTO> auditorias;
+
+    public CandidaturaDetailDTO() {
+    }
+
+    public CandidaturaDetailDTO(UUID id, VagaResponseDTO vaga, UsuarioDTO candidato,
+                                StatusCandidatura status, String nomeOriginalArquivo,
+                                Long tamanhoArquivoBytes, LocalDateTime dataSubmissao,
+                                LocalDateTime dataAtualizacao, AnaliseIAResponseDTO analiseIA,
+                                List<AuditoriaResponseDTO> auditorias) {
+        this.id = id;
+        this.vaga = vaga;
+        this.candidato = candidato;
+        this.status = status;
+        this.nomeOriginalArquivo = nomeOriginalArquivo;
+        this.tamanhoArquivoBytes = tamanhoArquivoBytes;
+        this.dataSubmissao = dataSubmissao;
+        this.dataAtualizacao = dataAtualizacao;
+        this.analiseIA = analiseIA;
+        this.auditorias = auditorias;
+    }
 
     public static CandidaturaDetailDTO fromEntity(Candidatura candidatura) {
         if (candidatura == null) return null;

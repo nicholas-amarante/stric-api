@@ -2,15 +2,10 @@ package com.stric.recrutamento.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class LoginRequest {
 
     @NotBlank(message = "O e-mail é obrigatório")
@@ -19,4 +14,13 @@ public class LoginRequest {
 
     @NotBlank(message = "A senha é obrigatória")
     private String senha;
+
+    public LoginRequest() {
+    }
+
+    @Builder
+    public LoginRequest(String email, String senha) {
+        this.email = email;
+        this.senha = senha;
+    }
 }

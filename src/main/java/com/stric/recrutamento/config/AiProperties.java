@@ -30,5 +30,8 @@ public class AiProperties {
      */
     private int timeoutSeconds = 45;
 
+    public AiProperties() {
+    }
+
     // REMOVIDO: mockFallbackEnabled — O sistema agora exige obrigatoriamente a API do Gemini.
 }

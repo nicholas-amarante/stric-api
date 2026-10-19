@@ -16,8 +16,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Serviço de triagem e análise de currículos por Inteligência Artificial (Google Gemini).

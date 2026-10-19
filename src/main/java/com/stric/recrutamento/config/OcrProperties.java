@@ -19,4 +19,7 @@ public class OcrProperties {
      * Idiomas para reconhecimento OCR (formato Tesseract: "por+eng" para Português + Inglês).
      */
     private String language = "por+eng";
+
+    public OcrProperties() {
+    }
 }

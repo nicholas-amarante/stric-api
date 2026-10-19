@@ -16,9 +16,6 @@ import java.util.UUID;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class AnaliseIA {
 
     @Id
@@ -38,12 +35,10 @@ public class AnaliseIA {
 
     @Convert(converter = StringListConverter.class)
     @Column(name = "requisitos_atendidos", columnDefinition = "TEXT")
-    @Builder.Default
     private List<String> requisitosAtendidos = new ArrayList<>();
 
     @Convert(converter = StringListConverter.class)
     @Column(name = "pontos_atencao", columnDefinition = "TEXT")
-    @Builder.Default
     private List<String> pontosAtencao = new ArrayList<>();
 
     @Column(name = "tempo_experiencia_anos")
@@ -70,4 +65,29 @@ public class AnaliseIA {
     @CreationTimestamp
     @Column(name = "data_processamento", nullable = false, updatable = false)
     private LocalDateTime dataProcessamento;
+
+    public AnaliseIA() {
+    }
+
+    @Builder
+    public AnaliseIA(UUID id, Candidatura candidatura, Integer scoreAderencia, String resumoExecutivo,
+                     List<String> requisitosAtendidos, List<String> pontosAtencao,
+                     Integer tempoExperienciaAnos, String nivelFormacao, String telefoneIdentificado,
+                     String emailIdentificado, String rawResponseJson, String promptUtilizado,
+                     String mensagemErro, LocalDateTime dataProcessamento) {
+        this.id = id;
+        this.candidatura = candidatura;
+        this.scoreAderencia = scoreAderencia;
+        this.resumoExecutivo = resumoExecutivo;
+        this.requisitosAtendidos = requisitosAtendidos != null ? requisitosAtendidos : new ArrayList<>();
+        this.pontosAtencao = pontosAtencao != null ? pontosAtencao : new ArrayList<>();
+        this.tempoExperienciaAnos = tempoExperienciaAnos;
+        this.nivelFormacao = nivelFormacao;
+        this.telefoneIdentificado = telefoneIdentificado;
+        this.emailIdentificado = emailIdentificado;
+        this.rawResponseJson = rawResponseJson;
+        this.promptUtilizado = promptUtilizado;
+        this.mensagemErro = mensagemErro;
+        this.dataProcessamento = dataProcessamento;
+    }
 }

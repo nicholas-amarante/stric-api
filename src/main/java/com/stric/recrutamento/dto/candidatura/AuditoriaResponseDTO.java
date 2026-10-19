@@ -1,18 +1,13 @@
 package com.stric.recrutamento.dto.candidatura;
 
 import com.stric.recrutamento.domain.entities.AuditoriaAcessoContato;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class AuditoriaResponseDTO {
 
     private UUID id;
@@ -21,6 +16,20 @@ public class AuditoriaResponseDTO {
     private String acao;
     private String justificativa;
     private LocalDateTime dataAcesso;
+
+    public AuditoriaResponseDTO() {
+    }
+
+    @Builder
+    public AuditoriaResponseDTO(UUID id, String nomeRecrutador, String emailRecrutador,
+                                String acao, String justificativa, LocalDateTime dataAcesso) {
+        this.id = id;
+        this.nomeRecrutador = nomeRecrutador;
+        this.emailRecrutador = emailRecrutador;
+        this.acao = acao;
+        this.justificativa = justificativa;
+        this.dataAcesso = dataAcesso;
+    }
 
     public static AuditoriaResponseDTO fromEntity(AuditoriaAcessoContato auditoria) {
         if (auditoria == null) return null;

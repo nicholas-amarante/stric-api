@@ -19,9 +19,6 @@ import java.util.UUID;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Vaga {
 
     @Id
@@ -37,21 +34,17 @@ public class Vaga {
 
     @Convert(converter = StringListConverter.class)
     @Column(name = "requisitos_obrigatorios", columnDefinition = "TEXT", nullable = false)
-    @Builder.Default
     private List<String> requisitosObrigatorios = new ArrayList<>();
 
     @Convert(converter = StringListConverter.class)
     @Column(name = "requisitos_desejaveis", columnDefinition = "TEXT")
-    @Builder.Default
     private List<String> requisitosDesejaveis = new ArrayList<>();
 
     @Column(name = "tempo_minimo_experiencia_anos", nullable = false)
-    @Builder.Default
     private Integer tempoMinimoExperienciaAnos = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    @Builder.Default
     private StatusVaga status = StatusVaga.ABERTA;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -65,4 +58,24 @@ public class Vaga {
     @UpdateTimestamp
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
+
+    public Vaga() {
+    }
+
+    @Builder
+    public Vaga(UUID id, String titulo, String descricao, List<String> requisitosObrigatorios,
+                List<String> requisitosDesejaveis, Integer tempoMinimoExperienciaAnos,
+                StatusVaga status, Usuario recrutador, LocalDateTime dataCriacao,
+                LocalDateTime dataAtualizacao) {
+        this.id = id;
+        this.titulo = titulo;
+        this.descricao = descricao;
+        this.requisitosObrigatorios = requisitosObrigatorios != null ? requisitosObrigatorios : new ArrayList<>();
+        this.requisitosDesejaveis = requisitosDesejaveis != null ? requisitosDesejaveis : new ArrayList<>();
+        this.tempoMinimoExperienciaAnos = tempoMinimoExperienciaAnos != null ? tempoMinimoExperienciaAnos : 0;
+        this.status = status != null ? status : StatusVaga.ABERTA;
+        this.recrutador = recrutador;
+        this.dataCriacao = dataCriacao;
+        this.dataAtualizacao = dataAtualizacao;
+    }
 }

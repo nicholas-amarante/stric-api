@@ -15,9 +15,6 @@ import java.util.UUID;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Usuario {
 
     @Id
@@ -45,4 +42,19 @@ public class Usuario {
     @UpdateTimestamp
     @Column(name = "data_atualizacao")
     private LocalDateTime dataAtualizacao;
+
+    public Usuario() {
+    }
+
+    @Builder
+    public Usuario(UUID id, String nome, String email, String senha, Role role,
+                   LocalDateTime dataCriacao, LocalDateTime dataAtualizacao) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.role = role;
+        this.dataCriacao = dataCriacao;
+        this.dataAtualizacao = dataAtualizacao;
+    }
 }

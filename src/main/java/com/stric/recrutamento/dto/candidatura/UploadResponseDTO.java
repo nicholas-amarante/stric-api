@@ -1,10 +1,8 @@
 package com.stric.recrutamento.dto.candidatura;
 
 import com.stric.recrutamento.domain.enums.StatusCandidatura;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,8 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class UploadResponseDTO {
 
     @JsonProperty("id")
@@ -26,4 +22,17 @@ public class UploadResponseDTO {
     private StatusCandidatura status;
     private String mensagem;
     private LocalDateTime dataSubmissao;
+
+    public UploadResponseDTO() {
+    }
+
+    public UploadResponseDTO(UUID candidaturaId, UUID vagaId, String tituloVaga,
+                             StatusCandidatura status, String mensagem, LocalDateTime dataSubmissao) {
+        this.candidaturaId = candidaturaId;
+        this.vagaId = vagaId;
+        this.tituloVaga = tituloVaga;
+        this.status = status;
+        this.mensagem = mensagem;
+        this.dataSubmissao = dataSubmissao;
+    }
 }

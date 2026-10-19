@@ -21,9 +21,6 @@ import java.util.UUID;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Candidatura {
 
     @Id
@@ -50,7 +47,6 @@ public class Candidatura {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 40)
-    @Builder.Default
     private StatusCandidatura status = StatusCandidatura.EM_ANALISE;
 
     @CreationTimestamp
@@ -65,6 +61,27 @@ public class Candidatura {
     private AnaliseIA analiseIA;
 
     @OneToMany(mappedBy = "candidatura", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<AuditoriaAcessoContato> auditorias = new ArrayList<>();
+
+    public Candidatura() {
+    }
+
+    @Builder
+    public Candidatura(UUID id, Vaga vaga, Usuario candidato, String caminhoCurriculoPdf,
+                       String nomeOriginalArquivo, Long tamanhoArquivoBytes,
+                       StatusCandidatura status, LocalDateTime dataSubmissao,
+                       LocalDateTime dataAtualizacao, AnaliseIA analiseIA,
+                       List<AuditoriaAcessoContato> auditorias) {
+        this.id = id;
+        this.vaga = vaga;
+        this.candidato = candidato;
+        this.caminhoCurriculoPdf = caminhoCurriculoPdf;
+        this.nomeOriginalArquivo = nomeOriginalArquivo;
+        this.tamanhoArquivoBytes = tamanhoArquivoBytes;
+        this.status = status != null ? status : StatusCandidatura.EM_ANALISE;
+        this.dataSubmissao = dataSubmissao;
+        this.dataAtualizacao = dataAtualizacao;
+        this.analiseIA = analiseIA;
+        this.auditorias = auditorias != null ? auditorias : new ArrayList<>();
+    }
 }

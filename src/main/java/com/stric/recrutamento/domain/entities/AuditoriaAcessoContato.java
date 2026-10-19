@@ -18,9 +18,6 @@ import java.util.UUID;
 })
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class AuditoriaAcessoContato {
 
     @Id
@@ -45,4 +42,18 @@ public class AuditoriaAcessoContato {
     @CreationTimestamp
     @Column(name = "data_acesso", nullable = false, updatable = false)
     private LocalDateTime dataAcesso;
+
+    public AuditoriaAcessoContato() {
+    }
+
+    @Builder
+    public AuditoriaAcessoContato(UUID id, Candidatura candidatura, Usuario recrutador,
+                                 String acao, String justificativa, LocalDateTime dataAcesso) {
+        this.id = id;
+        this.candidatura = candidatura;
+        this.recrutador = recrutador;
+        this.acao = acao;
+        this.justificativa = justificativa;
+        this.dataAcesso = dataAcesso;
+    }
 }

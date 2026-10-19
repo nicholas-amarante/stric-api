@@ -1,10 +1,8 @@
 package com.stric.recrutamento.dto.ia;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +11,6 @@ import java.util.List;
  * Retorno estruturado obrigatório da IA (Google Gemini).
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class AnaliseIAResultDTO {
 
     @JsonProperty("score_aderencia")
@@ -25,13 +20,25 @@ public class AnaliseIAResultDTO {
     private String resumoExecutivo;
 
     @JsonProperty("requisitos_atendidos")
-    @Builder.Default
     private List<String> requisitosAtendidos = new ArrayList<>();
 
     @JsonProperty("pontos_atencao")
-    @Builder.Default
     private List<String> pontosAtencao = new ArrayList<>();
 
     @JsonProperty("dados_extraidos")
     private DadosExtraidosDTO dadosExtraidos;
+
+    public AnaliseIAResultDTO() {
+    }
+
+    @Builder
+    public AnaliseIAResultDTO(Integer scoreAderencia, String resumoExecutivo,
+                              List<String> requisitosAtendidos, List<String> pontosAtencao,
+                              DadosExtraidosDTO dadosExtraidos) {
+        this.scoreAderencia = scoreAderencia;
+        this.resumoExecutivo = resumoExecutivo;
+        this.requisitosAtendidos = requisitosAtendidos != null ? requisitosAtendidos : new ArrayList<>();
+        this.pontosAtencao = pontosAtencao != null ? pontosAtencao : new ArrayList<>();
+        this.dadosExtraidos = dadosExtraidos;
+    }
 }

@@ -1,15 +1,10 @@
 package com.stric.recrutamento.dto.ia;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class DadosExtraidosDTO {
 
     @JsonProperty("tempo_experiencia_anos")
@@ -23,4 +18,16 @@ public class DadosExtraidosDTO {
 
     @JsonProperty("email_identificado")
     private String emailIdentificado;
+
+    public DadosExtraidosDTO() {
+    }
+
+    @Builder
+    public DadosExtraidosDTO(Integer tempoExperienciaAnos, String nivelFormacao,
+                            String telefoneIdentificado, String emailIdentificado) {
+        this.tempoExperienciaAnos = tempoExperienciaAnos;
+        this.nivelFormacao = nivelFormacao;
+        this.telefoneIdentificado = telefoneIdentificado;
+        this.emailIdentificado = emailIdentificado;
+    }
 }
