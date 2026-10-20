@@ -6,5 +6,6 @@ package com.stric.recrutamento.domain.enums;
 public enum StatusVaga {
     ABERTA,
     PAUSADA,
-    ENCERRADA
+    ENCERRADA,
+    CANCELADA
 }

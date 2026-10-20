@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,9 @@ public class Vaga {
     @Column(name = "status", nullable = false, length = 30)
     private StatusVaga status = StatusVaga.ABERTA;
 
+    @Column(name = "data_limite_inscricao")
+    private LocalDate dataLimiteInscricao;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "recrutador_id", nullable = false)
     private Usuario recrutador;
@@ -65,8 +69,8 @@ public class Vaga {
     @Builder
     public Vaga(UUID id, String titulo, String descricao, List<String> requisitosObrigatorios,
                 List<String> requisitosDesejaveis, Integer tempoMinimoExperienciaAnos,
-                StatusVaga status, Usuario recrutador, LocalDateTime dataCriacao,
-                LocalDateTime dataAtualizacao) {
+                StatusVaga status, LocalDate dataLimiteInscricao, Usuario recrutador,
+                LocalDateTime dataCriacao, LocalDateTime dataAtualizacao) {
         this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
@@ -74,6 +78,7 @@ public class Vaga {
         this.requisitosDesejaveis = requisitosDesejaveis != null ? requisitosDesejaveis : new ArrayList<>();
         this.tempoMinimoExperienciaAnos = tempoMinimoExperienciaAnos != null ? tempoMinimoExperienciaAnos : 0;
         this.status = status != null ? status : StatusVaga.ABERTA;
+        this.dataLimiteInscricao = dataLimiteInscricao;
         this.recrutador = recrutador;
         this.dataCriacao = dataCriacao;
         this.dataAtualizacao = dataAtualizacao;

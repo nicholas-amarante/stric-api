@@ -6,6 +6,7 @@ import com.stric.recrutamento.dto.auth.UsuarioDTO;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class VagaResponseDTO {
     private List<String> requisitosDesejaveis;
     private Integer tempoMinimoExperienciaAnos;
     private StatusVaga status;
+    private LocalDate dataLimiteInscricao;
     private UsuarioDTO recrutador;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
@@ -30,7 +32,7 @@ public class VagaResponseDTO {
     @Builder
     public VagaResponseDTO(UUID id, String titulo, String descricao,
                            List<String> requisitosObrigatorios, List<String> requisitosDesejaveis,
-                           Integer tempoMinimoExperienciaAnos, StatusVaga status,
+                           Integer tempoMinimoExperienciaAnos, StatusVaga status, LocalDate dataLimiteInscricao,
                            UsuarioDTO recrutador, LocalDateTime dataCriacao,
                            LocalDateTime dataAtualizacao) {
         this.id = id;
@@ -40,6 +42,7 @@ public class VagaResponseDTO {
         this.requisitosDesejaveis = requisitosDesejaveis;
         this.tempoMinimoExperienciaAnos = tempoMinimoExperienciaAnos;
         this.status = status;
+        this.dataLimiteInscricao = dataLimiteInscricao;
         this.recrutador = recrutador;
         this.dataCriacao = dataCriacao;
         this.dataAtualizacao = dataAtualizacao;
@@ -55,6 +58,7 @@ public class VagaResponseDTO {
                 .requisitosDesejaveis(vaga.getRequisitosDesejaveis())
                 .tempoMinimoExperienciaAnos(vaga.getTempoMinimoExperienciaAnos())
                 .status(vaga.getStatus())
+                .dataLimiteInscricao(vaga.getDataLimiteInscricao())
                 .recrutador(UsuarioDTO.fromEntity(vaga.getRecrutador()))
                 .dataCriacao(vaga.getDataCriacao())
                 .dataAtualizacao(vaga.getDataAtualizacao())

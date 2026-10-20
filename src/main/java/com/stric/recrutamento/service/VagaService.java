@@ -5,6 +5,7 @@ import com.stric.recrutamento.domain.entities.Vaga;
 import com.stric.recrutamento.domain.enums.Role;
 import com.stric.recrutamento.domain.enums.StatusVaga;
 import com.stric.recrutamento.domain.repositories.VagaRepository;
+import com.stric.recrutamento.domain.repositories.CandidaturaRepository;
 import com.stric.recrutamento.dto.vaga.VagaCreateDTO;
 import com.stric.recrutamento.dto.vaga.VagaResponseDTO;
 import com.stric.recrutamento.dto.vaga.VagaUpdateDTO;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class VagaService {
 
     private final VagaRepository vagaRepository;
+    private final CandidaturaRepository candidaturaRepository;
     private final SecurityUtils securityUtils;
 
     public VagaService(VagaRepository vagaRepository, SecurityUtils securityUtils) {
@@ -117,8 +119,18 @@ public class VagaService {
         Vaga vaga = findVagaOrThrow(id);
         validarPropriedadeVaga(vaga);
 
-        vagaRepository.delete(vaga);
-        log.info("Vaga excluída com sucesso: ID={}", id);
+        boolean temCandidatos = candidaturaRepository.existsByVagaId(id);
+        if (temCandidatos) {
+            // Soft delete: Se a vaga possui candidatos inscritos, altera o status para CANCELADA
+            // preservando a integridade referencial, histórico de candidaturas e transparência
+            vaga.setStatus(StatusVaga.CANCELADA);
+            vagaRepository.save(vaga);
+            log.info("Vaga ID={} possui candidatos inscritos. Status alterado para CANCELADA (soft delete) para preservar histórico.", id);
+        } else {
+            // Exclusão física definitiva permitida quando não há candidaturas vinculadas
+            vagaRepository.delete(vaga);
+            log.info("Vaga ID={} excluída fisicamente do banco de dados (sem candidatos vinculados).", id);
+        }
     }
 
     public Vaga findVagaOrThrow(UUID id) {

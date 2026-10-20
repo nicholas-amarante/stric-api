@@ -26,7 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -77,7 +79,13 @@ public class CandidaturaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vaga", vagaId));
 
         if (vaga.getStatus() != StatusVaga.ABERTA) {
-            throw new BusinessException("Não é possível submeter candidatura para uma vaga que não esteja com status ABERTA.");
+            throw new BusinessException("Não é possível submeter candidatura para uma vaga com status " + vaga.getStatus() + ".");
+        }
+
+        // Validação de Prazo Limite de Candidatura
+        if (vaga.getDataLimiteInscricao() != null && LocalDate.now().isAfter(vaga.getDataLimiteInscricao())) {
+            throw new BusinessException("O período de inscrições para esta vaga encerrou em " +
+                    vaga.getDataLimiteInscricao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + ".");
         }
 
         // Permite múltiplas candidaturas: apenas registra no log se já houver candidatura prévia
@@ -214,6 +222,11 @@ public class CandidaturaService {
 
         if (!isCandidatoDono && !isRecrutadorDono) {
             throw new UnauthorizedAccessException("Você não tem autorização para baixar este arquivo de currículo.");
+        }
+
+        // RN-LGPD / Blind Screening: Recrutador só pode baixar o PDF completo após selecionar para entrevista
+        if (isRecrutadorDono && !isCandidatoDono && candidatura.getStatus() != StatusCandidatura.SELECIONADO_ENTREVISTA) {
+            throw new BusinessException("O download do currículo com dados completos está bloqueado por conformidade LGPD. Selecione o candidato para entrevista para desbloquear o arquivo.");
         }
 
         return fileStorageService.loadAsResource(candidatura.getCaminhoCurriculoPdf());

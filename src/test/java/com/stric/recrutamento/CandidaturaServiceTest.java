@@ -13,6 +13,8 @@ import com.stric.recrutamento.dto.candidatura.CandidaturaDetailDTO;
 import com.stric.recrutamento.dto.candidatura.SelecaoEntrevistaDTO;
 import com.stric.recrutamento.dto.candidatura.UploadResponseDTO;
 import com.stric.recrutamento.exception.DuplicateApplicationException;
+import com.stric.recrutamento.exception.BusinessException;
+import org.springframework.core.io.Resource;
 import com.stric.recrutamento.service.*;
 import com.stric.recrutamento.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -185,5 +187,69 @@ class CandidaturaServiceTest {
         assertNotNull(result);
         assertEquals(StatusCandidatura.SELECIONADO_ENTREVISTA, result.getStatus());
         verify(auditoriaRepository, times(1)).save(any());
+    }
+    @Test
+    @DisplayName("LGPD: Deve bloquear download de PDF para recrutador se o candidato ainda não foi selecionado para entrevista")
+    void deveBloquearDownloadPdfParaRecrutadorAntesDaEntrevista() {
+        UUID candidaturaId = UUID.randomUUID();
+        Candidatura candidatura = Candidatura.builder()
+                .id(candidaturaId)
+                .vaga(vaga)
+                .candidato(candidato)
+                .status(StatusCandidatura.EM_ANALISE)
+                .caminhoCurriculoPdf("/tmp/storage/curriculo.pdf")
+                .build();
+
+        when(candidaturaRepository.findByIdWithDetails(candidaturaId)).thenReturn(Optional.of(candidatura));
+        when(securityUtils.getCurrentUser()).thenReturn(recrutador);
+
+        assertThrows(BusinessException.class, () ->
+                candidaturaService.baixarCurriculoPdf(candidaturaId));
+
+        verify(fileStorageService, never()).loadAsResource(any());
+    }
+
+    @Test
+    @DisplayName("LGPD: Deve liberar download de PDF para recrutador quando status for SELECIONADO_ENTREVISTA")
+    void deveLiberarDownloadPdfParaRecrutadorAposSelecaoEntrevista() {
+        UUID candidaturaId = UUID.randomUUID();
+        Candidatura candidatura = Candidatura.builder()
+                .id(candidaturaId)
+                .vaga(vaga)
+                .candidato(candidato)
+                .status(StatusCandidatura.SELECIONADO_ENTREVISTA)
+                .caminhoCurriculoPdf("/tmp/storage/curriculo.pdf")
+                .build();
+
+        when(candidaturaRepository.findByIdWithDetails(candidaturaId)).thenReturn(Optional.of(candidatura));
+        when(securityUtils.getCurrentUser()).thenReturn(recrutador);
+        when(fileStorageService.loadAsResource("/tmp/storage/curriculo.pdf")).thenReturn(mock(Resource.class));
+
+        Resource resource = candidaturaService.baixarCurriculoPdf(candidaturaId);
+
+        assertNotNull(resource);
+        verify(fileStorageService, times(1)).loadAsResource("/tmp/storage/curriculo.pdf");
+    }
+
+    @Test
+    @DisplayName("LGPD: Candidato dono da candidatura pode baixar seu próprio currículo em qualquer status")
+    void devePermitirCandidatoBaixarProprioCurriculoEmQualquerStatus() {
+        UUID candidaturaId = UUID.randomUUID();
+        Candidatura candidatura = Candidatura.builder()
+                .id(candidaturaId)
+                .vaga(vaga)
+                .candidato(candidato)
+                .status(StatusCandidatura.EM_ANALISE)
+                .caminhoCurriculoPdf("/tmp/storage/curriculo.pdf")
+                .build();
+
+        when(candidaturaRepository.findByIdWithDetails(candidaturaId)).thenReturn(Optional.of(candidatura));
+        when(securityUtils.getCurrentUser()).thenReturn(candidato);
+        when(fileStorageService.loadAsResource("/tmp/storage/curriculo.pdf")).thenReturn(mock(Resource.class));
+
+        Resource resource = candidaturaService.baixarCurriculoPdf(candidaturaId);
+
+        assertNotNull(resource);
+        verify(fileStorageService, times(1)).loadAsResource("/tmp/storage/curriculo.pdf");
     }
 }
