@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -33,6 +34,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+
+    @Value("${cors.allowed-origin-patterns:https://stric-web.vercel.app,https://stric-5a5a6i1m9-nicholas-e47c.vercel.app,https://*.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:8080,http://localhost:8081,*}")
+    private List<String> allowedOriginPatterns;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -107,10 +111,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        List<String> origins = (allowedOriginPatterns != null && !allowedOriginPatterns.isEmpty())
+                ? allowedOriginPatterns
+                : List.of(
+                        "https://stric-web.vercel.app",
+                        "https://stric-5a5a6i1m9-nicholas-e47c.vercel.app",
+                        "https://*.vercel.app",
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "http://localhost:8080",
+                        "http://localhost:8081",
+                        "*"
+                );
+        configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration
-                .setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin", "*"));
         configuration.setExposedHeaders(List.of("Content-Disposition", "Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

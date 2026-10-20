@@ -51,3 +51,8 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
+
+# Configurações de CORS
+cors:
+  allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:https://stric-web.vercel.app,https://stric-5a5a6i1m9-nicholas-e47c.vercel.app,https://*.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:8080,http://localhost:8081,*}
+
