@@ -29,8 +29,9 @@ public class VagaService {
     private final CandidaturaRepository candidaturaRepository;
     private final SecurityUtils securityUtils;
 
-    public VagaService(VagaRepository vagaRepository, SecurityUtils securityUtils) {
+    public VagaService(VagaRepository vagaRepository, CandidaturaRepository candidaturaRepository, SecurityUtils securityUtils) {
         this.vagaRepository = vagaRepository;
+        this.candidaturaRepository = candidaturaRepository;
         this.securityUtils = securityUtils;
     }
 
