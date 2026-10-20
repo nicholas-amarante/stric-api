@@ -8,6 +8,7 @@ import com.stric.recrutamento.dto.vaga.VagaResponseDTO;
 import lombok.Builder;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +51,21 @@ public class CandidaturaDetailDTO {
         this.dataAtualizacao = dataAtualizacao;
         this.analiseIA = analiseIA;
         this.auditorias = auditorias;
+    }
+
+    @JsonProperty("vagaId")
+    public UUID getVagaId() {
+        return vaga != null ? vaga.getId() : null;
+    }
+
+    @JsonProperty("vagaTitulo")
+    public String getVagaTitulo() {
+        return vaga != null ? vaga.getTitulo() : null;
+    }
+
+    @JsonProperty("candidatoNome")
+    public String getCandidatoNome() {
+        return candidato != null ? candidato.getNome() : null;
     }
 
     public static CandidaturaDetailDTO fromEntity(Candidatura candidatura) {

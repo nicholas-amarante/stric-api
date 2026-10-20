@@ -119,13 +119,18 @@ public class AiScreeningService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         log.info("Enviando requisição de análise para o Google Gemini ({})", aiProperties.getModel());
-        ResponseEntity<String> response = aiRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        try {
+            ResponseEntity<String> response = aiRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new RestClientException("Resposta inválida da API Gemini: HTTP " + response.getStatusCode());
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new RestClientException("Resposta inválida da API Gemini: HTTP " + response.getStatusCode());
+            }
+
+            return parseGeminiResponse(response.getBody());
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            log.error("Erro retornado pelo Google Gemini (HTTP {}): {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new BusinessException("Erro retornado pela API do Google Gemini: " + e.getResponseBodyAsString(), e);
         }
-
-        return parseGeminiResponse(response.getBody());
     }
 
     /**

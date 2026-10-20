@@ -80,9 +80,10 @@ public class CandidaturaService {
             throw new BusinessException("Não é possível submeter candidatura para uma vaga que não esteja com status ABERTA.");
         }
 
-        // RN02: Validação de Submissão Única (candidato_id + vaga_id)
+        // Permite múltiplas candidaturas: apenas registra no log se já houver candidatura prévia
         if (candidaturaRepository.existsByVagaIdAndCandidatoId(vaga.getId(), candidato.getId())) {
-            throw new DuplicateApplicationException("Você já submeteu uma candidatura para esta vaga. Apenas uma submissão é permitida (RN02).");
+            log.info("Candidato {} já possui candidatura anterior para a vaga {}. Permitindo nova submissão.",
+                    candidato.getEmail(), vaga.getTitulo());
         }
 
         // Validação multicamadas e armazenamento seguro do arquivo PDF em disco

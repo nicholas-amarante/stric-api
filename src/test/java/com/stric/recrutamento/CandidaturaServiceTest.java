@@ -90,22 +90,38 @@ class CandidaturaServiceTest {
     }
 
     @Test
-    @DisplayName("RN02: Deve lançar DuplicateApplicationException quando candidato tentar submeter duas vezes para a mesma vaga")
-    void deveRejeitarSubmissaoDuplicada() {
+    @DisplayName("Deve permitir submissão mesmo quando candidato já possui candidatura anterior para a vaga")
+    void devePermitirSubmissaoMesmoJaExistindoCandidaturaAnterior() {
         when(securityUtils.getCurrentUser()).thenReturn(candidato);
         when(vagaRepository.findById(vagaId)).thenReturn(Optional.of(vaga));
         when(candidaturaRepository.existsByVagaIdAndCandidatoId(vaga.getId(), candidato.getId())).thenReturn(true);
 
+        FileValidationAndStorageService.StoredFileResult storedResult = new FileValidationAndStorageService.StoredFileResult(
+                "/tmp/storage/arquivo2.pdf", "curriculo2.pdf", "uuid2.pdf", 1024L
+        );
+        when(fileStorageService.validateAndStore(any())).thenReturn(storedResult);
+
+        UUID candidaturaId = UUID.randomUUID();
+        Candidatura candidaturaSalva = Candidatura.builder()
+                .id(candidaturaId)
+                .vaga(vaga)
+                .candidato(candidato)
+                .status(StatusCandidatura.EM_ANALISE)
+                .build();
+        when(candidaturaRepository.save(any(Candidatura.class))).thenReturn(candidaturaSalva);
+
         MockMultipartFile file = new MockMultipartFile(
-                "arquivo", "curriculo.pdf", "application/pdf",
+                "arquivo", "curriculo2.pdf", "application/pdf",
                 "%PDF-1.7\nConteudo".getBytes(StandardCharsets.UTF_8)
         );
 
-        assertThrows(DuplicateApplicationException.class, () ->
-                candidaturaService.submeterCandidatura(vagaId, file));
+        UploadResponseDTO response = candidaturaService.submeterCandidatura(vagaId, file);
 
-        verify(candidaturaRepository, never()).save(any());
-        verify(asyncAiProcessingService, never()).processarCurriculoAssincrono(any());
+        assertNotNull(response);
+        assertEquals(candidaturaId, response.getCandidaturaId());
+        assertEquals(StatusCandidatura.EM_ANALISE, response.getStatus());
+        verify(candidaturaRepository).save(any(Candidatura.class));
+        verify(asyncAiProcessingService).processarCurriculoAssincrono(any());
     }
 
     @Test

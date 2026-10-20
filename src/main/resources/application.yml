@@ -34,7 +34,7 @@ ai:
     # A chave da API é carregada EXCLUSIVAMENTE por variável de ambiente.
     # Nunca insira a chave diretamente neste arquivo.
     api-key: ${GEMINI_API_KEY}
-    model: ${GEMINI_MODEL:gemini-1.5-flash}
+    model: ${GEMINI_MODEL:gemini-3.8-flash}
     endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta/models}
     timeout-seconds: 45
 

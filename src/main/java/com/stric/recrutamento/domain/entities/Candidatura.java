@@ -12,9 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "candidaturas", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_candidatura_vaga_candidato", columnNames = {"vaga_id", "candidato_id"})
-}, indexes = {
+@Table(name = "candidaturas", indexes = {
         @Index(name = "idx_candidatura_vaga", columnList = "vaga_id"),
         @Index(name = "idx_candidatura_candidato", columnList = "candidato_id"),
         @Index(name = "idx_candidatura_status", columnList = "status")
