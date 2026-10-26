@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class VagaUpdateDTO {
     @Min(value = 0, message = "O tempo mínimo de experiência em anos não pode ser negativo")
     private Integer tempoMinimoExperienciaAnos = 0;
 
+    private LocalDate dataLimiteInscricao;
+
     private StatusVaga status;
 
     public VagaUpdateDTO() {
@@ -37,12 +40,13 @@ public class VagaUpdateDTO {
     @Builder
     public VagaUpdateDTO(String titulo, String descricao, List<String> requisitosObrigatorios,
                          List<String> requisitosDesejaveis, Integer tempoMinimoExperienciaAnos,
-                         StatusVaga status) {
+                         LocalDate dataLimiteInscricao, StatusVaga status) {
         this.titulo = titulo;
         this.descricao = descricao;
         this.requisitosObrigatorios = requisitosObrigatorios != null ? requisitosObrigatorios : new ArrayList<>();
         this.requisitosDesejaveis = requisitosDesejaveis != null ? requisitosDesejaveis : new ArrayList<>();
         this.tempoMinimoExperienciaAnos = tempoMinimoExperienciaAnos != null ? tempoMinimoExperienciaAnos : 0;
+        this.dataLimiteInscricao = dataLimiteInscricao;
         this.status = status;
     }
 }

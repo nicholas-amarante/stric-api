@@ -15,7 +15,6 @@ import com.stric.recrutamento.dto.candidatura.CandidaturaMaskedDTO;
 import com.stric.recrutamento.dto.candidatura.SelecaoEntrevistaDTO;
 import com.stric.recrutamento.dto.candidatura.UploadResponseDTO;
 import com.stric.recrutamento.exception.BusinessException;
-import com.stric.recrutamento.exception.DuplicateApplicationException;
 import com.stric.recrutamento.exception.ResourceNotFoundException;
 import com.stric.recrutamento.exception.UnauthorizedAccessException;
 import com.stric.recrutamento.service.FileValidationAndStorageService.StoredFileResult;
@@ -24,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -32,9 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Service
@@ -188,7 +186,10 @@ public class CandidaturaService {
     }
 
     /**
-     * Obtém os detalhes completos de uma candidatura específica.
+     * Obtém os detalhes de uma candidatura específica.
+     * Em conformidade com a LGPD (Blind Screening), caso o solicitante seja o recrutador e o
+     * candidato ainda não tenha sido selecionado para entrevista, os dados pessoais e de contato
+     * permanecem mascarados.
      */
     @Transactional(readOnly = true)
     public CandidaturaDetailDTO obterDetalhes(UUID candidaturaId) {
@@ -204,7 +205,21 @@ public class CandidaturaService {
             throw new UnauthorizedAccessException("Você não tem autorização para visualizar os detalhes desta candidatura.");
         }
 
-        return CandidaturaDetailDTO.fromEntity(candidatura);
+        CandidaturaDetailDTO detailDTO = CandidaturaDetailDTO.fromEntity(candidatura);
+
+        // Proteção LGPD: mascara dados de identificação/contato para o recrutador antes da seleção para entrevista
+        if (isRecrutadorDono && !isCandidatoDono && candidatura.getStatus() != StatusCandidatura.SELECIONADO_ENTREVISTA) {
+            if (detailDTO.getCandidato() != null && dataMaskingService != null) {
+                detailDTO.getCandidato().setNome(dataMaskingService.maskName(detailDTO.getCandidato().getNome()));
+                detailDTO.getCandidato().setEmail(dataMaskingService.maskEmail(detailDTO.getCandidato().getEmail()));
+            }
+            if (detailDTO.getAnaliseIA() != null && dataMaskingService != null) {
+                detailDTO.getAnaliseIA().setEmailIdentificado(dataMaskingService.maskEmail(detailDTO.getAnaliseIA().getEmailIdentificado()));
+                detailDTO.getAnaliseIA().setTelefoneIdentificado(dataMaskingService.maskPhone(detailDTO.getAnaliseIA().getTelefoneIdentificado()));
+            }
+        }
+
+        return detailDTO;
     }
 
     /**

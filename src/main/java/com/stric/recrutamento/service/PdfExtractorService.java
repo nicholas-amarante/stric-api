@@ -43,6 +43,15 @@ public class PdfExtractorService {
     /** DPI para renderização de páginas PDF como imagem para OCR */
     private static final float OCR_RENDER_DPI = 300f;
 
+    /** Limite máximo de páginas processadas via OCR para proteger a memória Heap contra PDFs extensos */
+    private static final int MAX_OCR_PAGES = 15;
+
+    private static final List<String> FALLBACK_TESSDATA_PATHS = List.of(
+            "/usr/share/tesseract-ocr/5/tessdata",
+            "/usr/share/tesseract-ocr/4.00/tessdata",
+            "/usr/share/tessdata"
+    );
+
     /**
      * Extrai o conteúdo textual completo de um arquivo PDF armazenado localmente.
      * Se o PDF não possuir camada de texto (scan/imagem), utiliza OCR via Tesseract.
@@ -105,16 +114,15 @@ public class PdfExtractorService {
 
     /**
      * Renderiza cada página do PDF como imagem e aplica OCR com Tesseract.
-     * Utiliza resolução de 300 DPI para boa qualidade de reconhecimento.
+     * Utiliza resolução de 300 DPI para boa qualidade de reconhecimento e libera o buffer de imagem a cada página.
      */
     private String extractTextViaOcr(PDDocument document) {
         try {
             Tesseract tesseract = new Tesseract();
 
-            // Configuração do diretório tessdata com os arquivos de treinamento
-            File tessdataDir = new File(ocrProperties.getTessdataPath());
-            if (!tessdataDir.exists() || !tessdataDir.isDirectory()) {
-                log.error("Diretório tessdata não encontrado em: {}. OCR não disponível.", tessdataDir.getAbsolutePath());
+            File tessdataDir = resolveTessdataDirectory();
+            if (tessdataDir == null) {
+                log.error("Diretório tessdata não encontrado (configurado: '{}'). OCR não disponível.", ocrProperties.getTessdataPath());
                 log.error("Faça o download dos arquivos de treinamento em: https://github.com/tesseract-ocr/tessdata");
                 return null;
             }
@@ -130,22 +138,33 @@ public class PdfExtractorService {
             List<String> pageTexts = new ArrayList<>();
 
             int totalPages = document.getNumberOfPages();
-            log.info("Processando {} página(s) do PDF via OCR (DPI: {})...", totalPages, OCR_RENDER_DPI);
+            int pagesToProcess = Math.min(totalPages, MAX_OCR_PAGES);
+            if (totalPages > MAX_OCR_PAGES) {
+                log.warn("PDF possui {} páginas. Limitando processamento OCR às primeiras {} páginas por segurança de memória.",
+                        totalPages, MAX_OCR_PAGES);
+            } else {
+                log.info("Processando {} página(s) do PDF via OCR (DPI: {})...", pagesToProcess, OCR_RENDER_DPI);
+            }
 
-            for (int page = 0; page < totalPages; page++) {
+            for (int page = 0; page < pagesToProcess; page++) {
+                BufferedImage image = null;
                 try {
                     // Renderiza a página como imagem em alta resolução
-                    BufferedImage image = renderer.renderImageWithDPI(page, OCR_RENDER_DPI, ImageType.RGB);
+                    image = renderer.renderImageWithDPI(page, OCR_RENDER_DPI, ImageType.RGB);
 
                     // Aplica OCR na imagem renderizada
                     String pageText = tesseract.doOCR(image);
 
                     if (pageText != null && !pageText.trim().isEmpty()) {
                         pageTexts.add(pageText.trim());
-                        log.debug("OCR página {}/{}: {} caracteres extraídos", page + 1, totalPages, pageText.trim().length());
+                        log.debug("OCR página {}/{}: {} caracteres extraídos", page + 1, pagesToProcess, pageText.trim().length());
                     }
                 } catch (TesseractException e) {
-                    log.warn("Falha no OCR da página {}/{}: {}", page + 1, totalPages, e.getMessage());
+                    log.warn("Falha no OCR da página {}/{}: {}", page + 1, pagesToProcess, e.getMessage());
+                } finally {
+                    if (image != null) {
+                        image.flush();
+                    }
                 }
             }
 
@@ -159,6 +178,20 @@ public class PdfExtractorService {
             log.error("Erro durante o processamento OCR via Tesseract: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    private File resolveTessdataDirectory() {
+        File configured = new File(ocrProperties.getTessdataPath());
+        if (configured.exists() && configured.isDirectory()) {
+            return configured;
+        }
+        for (String fallback : FALLBACK_TESSDATA_PATHS) {
+            File dir = new File(fallback);
+            if (dir.exists() && dir.isDirectory()) {
+                return dir;
+            }
+        }
+        return null;
     }
 
     /**

@@ -16,9 +16,9 @@ public class AiProperties {
     private String apiKey = "";
 
     /**
-     * Modelo utilizado (ex: gemini-3.8-flash).
+     * Modelo utilizado (ex: gemini-2.5-flash).
      */
-    private String model = "gemini-3.8-flash";
+    private String model = "gemini-2.5-flash";
 
     /**
      * Endpoint base da API do Gemini.

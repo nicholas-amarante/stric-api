@@ -9,9 +9,10 @@ import com.stric.recrutamento.domain.repositories.CandidaturaRepository;
 import com.stric.recrutamento.dto.ia.AnaliseIAResultDTO;
 import com.stric.recrutamento.dto.ia.DadosExtraidosDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,26 +29,39 @@ public class AsyncAiProcessingService {
     private final PdfExtractorService pdfExtractorService;
     private final AiScreeningService aiScreeningService;
     private final ObjectMapper objectMapper;
+    private final TransactionTemplate transactionTemplate;
+
+    @Autowired
+    public AsyncAiProcessingService(CandidaturaRepository candidaturaRepository,
+                                    AnaliseIARepository analiseIARepository,
+                                    PdfExtractorService pdfExtractorService,
+                                    AiScreeningService aiScreeningService,
+                                    ObjectMapper objectMapper,
+                                    TransactionTemplate transactionTemplate) {
+        this.candidaturaRepository = candidaturaRepository;
+        this.analiseIARepository = analiseIARepository;
+        this.pdfExtractorService = pdfExtractorService;
+        this.aiScreeningService = aiScreeningService;
+        this.objectMapper = objectMapper;
+        this.transactionTemplate = transactionTemplate;
+    }
 
     public AsyncAiProcessingService(CandidaturaRepository candidaturaRepository,
                                     AnaliseIARepository analiseIARepository,
                                     PdfExtractorService pdfExtractorService,
                                     AiScreeningService aiScreeningService,
                                     ObjectMapper objectMapper) {
-        this.candidaturaRepository = candidaturaRepository;
-        this.analiseIARepository = analiseIARepository;
-        this.pdfExtractorService = pdfExtractorService;
-        this.aiScreeningService = aiScreeningService;
-        this.objectMapper = objectMapper;
+        this(candidaturaRepository, analiseIARepository, pdfExtractorService, aiScreeningService, objectMapper, null);
     }
 
     /**
      * Executa o pipeline de IA em segundo plano de forma não bloqueante.
+     * As operações de I/O pesado (OCR e chamada HTTP ao Gemini) ocorrem fora de transações de banco
+     * para evitar retenção e esgotamento do pool de conexões (HikariCP).
      *
      * @param candidaturaId Identificador único da candidatura
      */
     @Async("aiTaskExecutor")
-    @Transactional
     public void processarCurriculoAssincrono(UUID candidaturaId) {
         log.info("[Async-AI] Iniciando pipeline assíncrono para Candidatura ID: {}", candidaturaId);
 
@@ -58,15 +72,15 @@ public class AsyncAiProcessingService {
         }
 
         try {
-            // 1. Extração de texto do arquivo PDF local
+            // 1. Extração de texto do arquivo PDF local (fora de transação DB)
             log.info("[Async-AI] Extraindo texto do PDF: {}", candidatura.getCaminhoCurriculoPdf());
             String curriculoTexto = pdfExtractorService.extractText(candidatura.getCaminhoCurriculoPdf());
 
-            // 2. Chamada à IA (Google Gemini) com proteção anti-injection
+            // 2. Chamada à IA (Google Gemini) com proteção anti-injection (fora de transação DB)
             log.info("[Async-AI] Enviando prompt para avaliação de aderência frente à vaga '{}'", candidatura.getVaga().getTitulo());
             AnaliseIAResultDTO resultadoIA = aiScreeningService.screenResume(candidatura.getVaga(), curriculoTexto);
 
-            // 3. Persistência da entidade AnaliseIA
+            // 3. Persistência da entidade AnaliseIA em transação curta
             DadosExtraidosDTO dados = resultadoIA.getDadosExtraidos() != null ?
                     resultadoIA.getDadosExtraidos() : DadosExtraidosDTO.builder().build();
 
@@ -92,10 +106,7 @@ public class AsyncAiProcessingService {
                     .dataProcessamento(LocalDateTime.now())
                     .build();
 
-            analiseIARepository.save(analiseIA);
-            candidatura.setAnaliseIA(analiseIA);
-            candidatura.setStatus(StatusCandidatura.CONCLUIDO);
-            candidaturaRepository.save(candidatura);
+            salvarResultadoEmTransacao(candidatura, analiseIA, StatusCandidatura.CONCLUIDO);
 
             log.info("[Async-AI] Pipeline concluído com sucesso para Candidatura ID: {}. Score: {}%",
                     candidaturaId, analiseIA.getScoreAderencia());
@@ -111,10 +122,22 @@ public class AsyncAiProcessingService {
                     .dataProcessamento(LocalDateTime.now())
                     .build();
 
-            analiseIARepository.save(analiseErro);
-            candidatura.setAnaliseIA(analiseErro);
-            candidatura.setStatus(StatusCandidatura.ERRO_PROCESSAMENTO);
+            salvarResultadoEmTransacao(candidatura, analiseErro, StatusCandidatura.ERRO_PROCESSAMENTO);
+        }
+    }
+
+    private void salvarResultadoEmTransacao(Candidatura candidatura, AnaliseIA analise, StatusCandidatura novoStatus) {
+        Runnable saveAction = () -> {
+            analiseIARepository.save(analise);
+            candidatura.setAnaliseIA(analise);
+            candidatura.setStatus(novoStatus);
             candidaturaRepository.save(candidatura);
+        };
+
+        if (transactionTemplate != null) {
+            transactionTemplate.executeWithoutResult(status -> saveAction.run());
+        } else {
+            saveAction.run();
         }
     }
 }

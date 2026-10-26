@@ -4,12 +4,11 @@ import com.stric.recrutamento.domain.entities.Usuario;
 import com.stric.recrutamento.domain.entities.Vaga;
 import com.stric.recrutamento.domain.enums.Role;
 import com.stric.recrutamento.domain.enums.StatusVaga;
-import com.stric.recrutamento.domain.repositories.VagaRepository;
 import com.stric.recrutamento.domain.repositories.CandidaturaRepository;
+import com.stric.recrutamento.domain.repositories.VagaRepository;
 import com.stric.recrutamento.dto.vaga.VagaCreateDTO;
 import com.stric.recrutamento.dto.vaga.VagaResponseDTO;
 import com.stric.recrutamento.dto.vaga.VagaUpdateDTO;
-import com.stric.recrutamento.exception.BusinessException;
 import com.stric.recrutamento.exception.ResourceNotFoundException;
 import com.stric.recrutamento.exception.UnauthorizedAccessException;
 import com.stric.recrutamento.util.SecurityUtils;
@@ -49,6 +48,7 @@ public class VagaService {
                 .requisitosObrigatorios(dto.getRequisitosObrigatorios())
                 .requisitosDesejaveis(dto.getRequisitosDesejaveis())
                 .tempoMinimoExperienciaAnos(dto.getTempoMinimoExperienciaAnos() != null ? dto.getTempoMinimoExperienciaAnos() : 0)
+                .dataLimiteInscricao(dto.getDataLimiteInscricao())
                 .status(StatusVaga.ABERTA)
                 .recrutador(recrutador)
                 .build();
@@ -70,6 +70,7 @@ public class VagaService {
         vaga.setRequisitosObrigatorios(dto.getRequisitosObrigatorios());
         vaga.setRequisitosDesejaveis(dto.getRequisitosDesejaveis());
         vaga.setTempoMinimoExperienciaAnos(dto.getTempoMinimoExperienciaAnos() != null ? dto.getTempoMinimoExperienciaAnos() : 0);
+        vaga.setDataLimiteInscricao(dto.getDataLimiteInscricao());
 
         if (dto.getStatus() != null) {
             vaga.setStatus(dto.getStatus());

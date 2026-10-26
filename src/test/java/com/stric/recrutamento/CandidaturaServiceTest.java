@@ -1,5 +1,6 @@
 package com.stric.recrutamento;
 
+import com.stric.recrutamento.domain.entities.AnaliseIA;
 import com.stric.recrutamento.domain.entities.Candidatura;
 import com.stric.recrutamento.domain.entities.Usuario;
 import com.stric.recrutamento.domain.entities.Vaga;
@@ -12,9 +13,7 @@ import com.stric.recrutamento.domain.repositories.VagaRepository;
 import com.stric.recrutamento.dto.candidatura.CandidaturaDetailDTO;
 import com.stric.recrutamento.dto.candidatura.SelecaoEntrevistaDTO;
 import com.stric.recrutamento.dto.candidatura.UploadResponseDTO;
-import com.stric.recrutamento.exception.DuplicateApplicationException;
 import com.stric.recrutamento.exception.BusinessException;
-import org.springframework.core.io.Resource;
 import com.stric.recrutamento.service.*;
 import com.stric.recrutamento.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.nio.charset.StandardCharsets;
@@ -188,6 +188,7 @@ class CandidaturaServiceTest {
         assertEquals(StatusCandidatura.SELECIONADO_ENTREVISTA, result.getStatus());
         verify(auditoriaRepository, times(1)).save(any());
     }
+
     @Test
     @DisplayName("LGPD: Deve bloquear download de PDF para recrutador se o candidato ainda não foi selecionado para entrevista")
     void deveBloquearDownloadPdfParaRecrutadorAntesDaEntrevista() {
@@ -251,5 +252,39 @@ class CandidaturaServiceTest {
 
         assertNotNull(resource);
         verify(fileStorageService, times(1)).loadAsResource("/tmp/storage/curriculo.pdf");
+    }
+
+    @Test
+    @DisplayName("LGPD: Deve mascarar dados pessoais em obterDetalhes para recrutador antes da seleção para entrevista")
+    void deveMascararDadosEmObterDetalhesParaRecrutadorAntesDaEntrevista() {
+        UUID candidaturaId = UUID.randomUUID();
+        AnaliseIA analiseIA = AnaliseIA.builder()
+                .id(UUID.randomUUID())
+                .scoreAderencia(85)
+                .emailIdentificado("candidato@teste.com")
+                .telefoneIdentificado("(11) 98765-4321")
+                .build();
+
+        Candidatura candidatura = Candidatura.builder()
+                .id(candidaturaId)
+                .vaga(vaga)
+                .candidato(candidato)
+                .status(StatusCandidatura.CONCLUIDO)
+                .analiseIA(analiseIA)
+                .build();
+
+        when(candidaturaRepository.findByIdWithDetails(candidaturaId)).thenReturn(Optional.of(candidatura));
+        when(securityUtils.getCurrentUser()).thenReturn(recrutador);
+        when(dataMaskingService.maskName("Candidato Teste")).thenReturn("Candidato T.");
+        when(dataMaskingService.maskEmail("candidato@teste.com")).thenReturn("c***o@***.com");
+        when(dataMaskingService.maskPhone("(11) 98765-4321")).thenReturn("(11) 9****-**21");
+
+        CandidaturaDetailDTO detalhes = candidaturaService.obterDetalhes(candidaturaId);
+
+        assertNotNull(detalhes);
+        assertEquals("Candidato T.", detalhes.getCandidato().getNome());
+        assertEquals("c***o@***.com", detalhes.getCandidato().getEmail());
+        assertEquals("c***o@***.com", detalhes.getAnaliseIA().getEmailIdentificado());
+        assertEquals("(11) 9****-**21", detalhes.getAnaliseIA().getTelefoneIdentificado());
     }
 }

@@ -17,7 +17,7 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> 
 
     boolean existsByVagaId(UUID vagaId);
 
-    Optional<Candidatura> findByVagaIdAndCandidatoId(UUID vagaId, UUID candidatoId);
+    List<Candidatura> findByVagaIdAndCandidatoId(UUID vagaId, UUID candidatoId);
 
     @Query("SELECT c FROM Candidatura c " +
            "LEFT JOIN FETCH c.candidato " +

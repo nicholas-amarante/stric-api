@@ -35,7 +35,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
 
-    @Value("${cors.allowed-origin-patterns:https://stric-web.vercel.app,https://stric-5a5a6i1m9-nicholas-e47c.vercel.app,https://*.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:8080,http://localhost:8081,*}")
+    @Value("${cors.allowed-origin-patterns:https://stric-web.vercel.app,https://stric-5a5a6i1m9-nicholas-e47c.vercel.app,https://*.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:8080,http://localhost:8081}")
     private List<String> allowedOriginPatterns;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
@@ -120,8 +120,8 @@ public class SecurityConfig {
                         "http://localhost:3000",
                         "http://localhost:5173",
                         "http://localhost:8080",
-                        "http://localhost:8081",
-                        "*"
+                        "http://localhost:8081"
+
                 );
         configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

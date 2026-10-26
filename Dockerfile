@@ -33,11 +33,19 @@ RUN apt-get update && \
     tesseract-ocr-eng && \
     rm -rf /var/lib/apt/lists/*
 
+# Aponta TESSDATA_PREFIX para os modelos instalados no sistema operacional
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
+
+# Cria usuário não-root para execução segura do container
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+
 # Copia o JAR compilado do builder
 COPY --from=builder /app/target/*.jar app.jar
 
-# Garante pasta de armazenamento para arquivos
-RUN mkdir -p /app/storage/uploads/curriculos && chmod -R 777 /app/storage
+# Garante pasta de armazenamento para arquivos com permissão restrita ao appuser
+RUN mkdir -p /app/storage/uploads/curriculos && chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 8080
 
