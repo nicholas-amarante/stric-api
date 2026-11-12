@@ -198,4 +198,83 @@ curl -X PATCH http://localhost:8081/api/candidaturas/<CANDIDATURA_UUID>/reproces
   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"
 ```
 
+---
+
+## 👥 Papéis de Usuário e Controle de Acesso (RBAC)
+
+O controle de acesso no STRIC é baseado em papéis estritos geridos pelo Spring Security:
+
+- **`ROLE_CANDIDATE`**: Perfil de candidato autenticado. Tem permissão para consultar vagas, submeter candidaturas (upload de PDF), acompanhar o status de suas próprias candidaturas e baixar o PDF submetido.
+- **`ROLE_RECRUITER`**: Perfil de recrutador autenticado. Tem permissão para criar, alterar e encerrar vagas, visualizar a listagem e os detalhes de candidatos triados com mascaramento LGPD, solicitar revelação de contato para entrevista e disparar o reprocessamento da triagem.
+- **Visitante (Acesso Público)**: Representa o usuário não autenticado. **Não é um papel (`Role`) cadastrado ou persistido no banco de dados**, mas sim o acesso anônimo concedido a endpoints públicos, tais como endpoints de autenticação (`/api/auth/register`, `/api/auth/login`), visualização pública de vagas abertas (`GET /api/vagas`, `GET /api/vagas/{id}`) e documentação Swagger.
+- **Integrações de Infraestrutura (Google Gemini e Tesseract OCR)**: São componentes e serviços de integração de infraestrutura consumidos pelo backend, **não possuindo credenciais de usuário, papéis ou representação no modelo de RBAC**.
+
+---
+
+## 🧮 Como o Score de Aderência é Definido
+
+O cálculo do score final de compatibilidade técnica (0 a 100%) é **100% determinístico e executado exclusivamente pelo backend** (`CalculadoraScoreService`), garantindo total auditabilidade:
+
+1. **Separação de Responsabilidades da IA**:
+   - A Inteligência Artificial (Gemini) **não calcula a nota global** e **não tem autoridade para aprovar ou reprovar candidatos**.
+   - O papel do modelo generativo restringe-se a interpretar semanticamente o currículo frente aos requisitos cadastrados, retornando a classificação individual, o percentual de atendimento de cada item, citações de evidência e estimativas de experiência/formação.
+2. **Ponderação e Distribuição de Pesos**:
+   - **Vagas com Requisitos Desejáveis**:
+     $$\text{Score} = (0{,}70 \times \text{Aderência}_{\text{obrigatórios}}) + (0{,}20 \times \text{Aderência}_{\text{desejáveis}}) + (0{,}10 \times \text{Aderência}_{\text{experiência}})$$
+   - **Vagas sem Requisitos Desejáveis**:
+     Para evitar penalização indevida do candidato, o peso dos desejáveis é absorvido pelos obrigatórios:
+     $$\text{Score} = (0{,}90 \times \text{Aderência}_{\text{obrigatórios}}) + (0{,}10 \times \text{Aderência}_{\text{experiência}})$$
+3. **Média Ponderada por Requisito**:
+   - Dentro de cada grupo (obrigatórios ou desejáveis), o atendimento é calculado pela média ponderada dos percentuais individuais baseada no peso configurado para cada requisito:
+     $$\text{Aderência}_{\text{grupo}} = \frac{\sum (\text{peso}_i \times \text{percentualAtendimento}_i)}{\sum \text{peso}_i}$$
+4. **Cálculo da Experiência Profissional**:
+   - Proporcional ao tempo mínimo exigido pela vaga:
+     $$\text{Aderência}_{\text{experiência}} = \min\left(\frac{\text{anosExperienciaCandidato}}{\text{tempoMinimoExperienciaVaga}}, 1{,}0\right)$$
+   - Se a vaga não exigir tempo mínimo, a aderência deste critério é considerada integral (1,0).
+5. **Normalização Final**:
+   - O resultado global é escalado para 0–100 e arredondado para número inteiro (`int`) com compensação para imprecisões de ponto flutuante.
+
+---
+
+## 📊 Dados Estruturados e Privacidade (LGPD)
+
+A análise armazena detalhadamente a avaliação semântica e respeita a minimização de dados preconizada pela LGPD:
+
+- **Estrutura por Requisito (`AnaliseRequisito`)**:
+  - `tipo`: Obrigatório (`OBRIGATORIO`) ou Desejável (`DESEJAVEL`).
+  - `peso`: Peso relativo definido no cadastro do requisito da vaga (padrão 1).
+  - `classificacao`: Enum semântico avaliado pela IA (`ATENDIDO`, `PARCIALMENTE_ATENDIDO`, `NAO_ATENDIDO`, `NAO_IDENTIFICADO`, `INCONCLUSIVO`).
+  - `percentualAtendimento`: Valor numérico normalizado entre 0.0 e 1.0.
+  - `evidenciaTexto`: Trecho literal extraído do currículo que sustenta a avaliação.
+  - `paginaCurriculo`: Página do PDF onde a evidência foi localizada.
+  - `confiancaIA`: Grau de certeza da IA na inferência (0.0 a 1.0).
+  - `justificativa`: Justificativa técnica do modelo para a classificação atribuída.
+- **Dados Extraídos do Candidato**:
+  - `tempoExperienciaAnos`: Anos totais de experiência profissional identificados.
+  - `nivelFormacao`: Escolaridade/titulação mais alta identificada no documento.
+  - `resumoExecutivo`: Síntese textual do perfil técnico elaborado pela IA.
+- **Anonimização Prévia e Não Persistência de PII**:
+  - Antes de qualquer chamada ao LLM, o texto extraído do PDF passa por higienização via `PiiRedactionService`, que substitui dados de contato e dados pessoais identificáveis (como nome do candidato, CPF, telefone e e-mail) por marcadores anônimos (`[NOME_REMOVIDO]`, `[CPF_REMOVIDO]`, etc.).
+  - Os campos de contato na análise (`telefone_identificado` e `email_identificado`) são **gravados como `null`** no banco de dados, assegurando que informações sensíveis não sejam duplicadas na estrutura analítica da IA.
+
+---
+
+## 🔍 Rastreabilidade, Auditoria e Limites Atuais
+
+O STRIC mantém mecanismos para auditoria de decisões automatizadas, com limites claros de reprodutibilidade:
+
+- **Metadados Persistidos**:
+  - `modelo_ia`: Modelo utilizado na chamada (ex.: `gemini-2.5-flash`).
+  - `versao_prompt`: Identificador da versão do prompt empregado (ex.: `triagem-explicavel-v1`).
+  - `prompt_utilizado`: **Não armazena o prompt completo expandido** com os dados interpolados do currículo; armazena apenas a string identificadora de versão por razões de economia de armazenamento e privacidade.
+  - `raw_response_json`: Armazena o JSON resultante normalizado após o parsing e validação estrutural do DTO (`AnaliseIAResultDTO`), e **não o payload HTTP bruto** (envelope original de resposta do Google Gemini).
+  - `data_processamento`: Data/hora registrada no processamento.
+- **Histórico de Reprocessamento**:
+  - Quando um recrutador aciona `PATCH /api/candidaturas/{id}/reprocessar`, o registro anterior da análise não é sobrescrito destrutivamente: ele é copiado para a entidade `HistoricoAnaliseIA` preservando score anterior, modelo, versão do prompt, raw response JSON estruturado e data da avaliação anterior.
+- **Limitações de Reprodutibilidade Conhecidas**:
+  - **A versão da fórmula de cálculo de score NÃO é persistida** na tabela de análise. Caso os pesos ou as regras de cálculo do backend venham a ser alterados no código-fonte no futuro, não há identificador de versão do algoritmo persistido na linha da análise para discriminar retroativamente qual fórmula foi aplicada, exceto pela inferência indireta via `data_processamento`.
+  - Como nem o prompt interpolado integral nem a resposta HTTP bruta de baixo nível são armazenados na íntegra, a reprodução forense idêntica depende da versão do prompt, do PDF do currículo armazenado e do estado dos requisitos da vaga.
+
+---
+
 Os identificadores de vagas e candidaturas são UUIDs. Para o contrato detalhado da análise por requisito, consulte [a documentação de triagem explicável](docs/triagem-explicavel.md).
