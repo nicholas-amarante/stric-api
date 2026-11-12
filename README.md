@@ -15,7 +15,7 @@ O **STRIC** é uma plataforma de triagem automatizada de currículos em formato 
 - **Extração Híbrida de PDF**:
   - **Apache PDFBox 3.0.3**: Extração vetorial de fluxos diretos de texto em arquivos PDF digitais.
   - **Tess4J 5.13.0 (Tesseract OCR)**: Fallback automático com renderização a 300 DPI para leitura óptica de currículos escaneados, fotos ou documentos sem camada de texto vetorial, suportado pelos modelos em `tessdata`.
-- **Inteligência Artificial**: Google Gemini (modelo `gemini-1.5-flash` via REST API com isolamento `<curriculo_texto>` anti-prompt injection e fallback mock inteligente para desenvolvimento offline/local)
+- **Inteligência Artificial**: Google Gemini (modelo padrão `gemini-2.5-flash` via REST API, configurável por `GEMINI_MODEL`, com isolamento `<curriculo_texto>` contra prompt injection). A variável `GEMINI_API_KEY` é obrigatória; não há fallback simulado.
 - **Banco de Dados**: PostgreSQL 16 (via Docker Compose na porta `5438:5432` para evitar colisões com instâncias locais; suporte a H2 in-memory para testes unitários)
 - **Documentação Interativa de API**: Springdoc OpenAPI / Swagger UI 2.6.0
 - **Build Tool**: Apache Maven 3.9+
@@ -27,7 +27,7 @@ O **STRIC** é uma plataforma de triagem automatizada de currículos em formato 
 | Regra / Requisito | Descrição |
 |---|---|
 | **RN01 (Cadastro de Vagas)** | Título, descrição, requisitos obrigatórios, desejáveis e tempo mínimo de experiência em anos (`ROLE_RECRUITER`). |
-| **RN02 (Submissão Única)** | Candidato só pode submeter 1 currículo por vaga ativa (`uk_candidatura_vaga_candidato`). |
+| **RN02 (Submissão de Currículos)** | Candidatos podem submeter currículos para vagas ativas. Cada submissão gera uma candidatura e é processada de forma independente. |
 | **RN03 (Processamento Assíncrono)** | Endpoint de upload responde imediatamente `HTTP 202 Accepted` com status `EM_ANALISE` e processa a IA em segundo plano via `@Async`. |
 | **RN04 (Cálculo de Aderência)** | A IA avalia o currículo frente aos requisitos da vaga e gera score de compatibilidade técnica de 0 a 100%. |
 | **RN05 (Ciclo de Vida & LGPD)** | Registro de `data_submissao` para controle de retenção de dados e histórico de auditoria. |
@@ -66,12 +66,14 @@ O container está mapeado para a porta **5438** do host (para não disputar com 
 docker-compose up -d
 ```
 
-### 3. Configurar Variáveis de Ambiente (Opcional)
+### 3. Configurar Variáveis de Ambiente
 Defina no ambiente ou no arquivo `.env` (na raiz do projeto):
-- `GEMINI_API_KEY`: Chave da API do Google Gemini.
+- `GEMINI_API_KEY`: Chave obrigatória da API do Google Gemini.
+- `GEMINI_MODEL`: Modelo Gemini a utilizar (padrão: `gemini-2.5-flash`).
 - `DB_URL`: `jdbc:postgresql://localhost:5438/stric_db`
 - `DB_USERNAME`: `postgres`
 - `DB_PASSWORD`: `postgres`
+- `SERVER_PORT` ou `PORT`: Porta HTTP da aplicação (padrão: `8081`).
 
 ### 4. Compilar e Executar
 
@@ -96,13 +98,13 @@ Defina no ambiente ou no arquivo `.env` (na raiz do projeto):
 #### Via IDE (VS Code / Antigravity IDE):
 Pressione `F5` ou selecione o profile **StricApiApplication (dev)** na aba *Run & Debug*.
 
-A API estará acessível em: `http://localhost:8080`.
+A API estará acessível em: `http://localhost:8081` por padrão. Configure `SERVER_PORT` ou `PORT` caso precise utilizar outra porta.
 
 ---
 
 ## 📖 Documentação da API (Swagger / OpenAPI)
 Acesse a interface interativa e teste todos os endpoints diretamente no navegador:
-👉 **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
+👉 **[http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)**
 
 ---
 
@@ -119,7 +121,7 @@ Acesse a interface interativa e teste todos os endpoints diretamente no navegado
 
 #### Exemplo de Atualização de Perfil (cURL):
 ```bash
-curl -X PUT http://localhost:8080/api/auth/profile   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_JWT>"   -d '{
+curl -X PUT http://localhost:8081/api/auth/profile   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_JWT>"   -d '{
     "nome": "Lucas Santos Silva Atualizado",
     "email": "lucas.novo@email.com",
     "senhaAtual": "senha123",
@@ -133,7 +135,7 @@ curl -X PUT http://localhost:8080/api/auth/profile   -H "Content-Type: applicati
 
 | Método | Endpoint | Proteção | Descrição |
 |---|---|---|---|
-| `GET` | `/api/vagas` | Público | Listar vagas com status `ABERTA`. Suporta `?termoBusca=` e `?experienciaMaxima=`. |
+| `GET` | `/api/vagas` | Público | Listar vagas com status `ABERTA`. Suporta `?search=` e `?maxExperience=`. |
 | `GET` | `/api/vagas/minhas` | `RECRUITER` | Listar apenas as vagas criadas pelo recrutador autenticado. |
 | `GET` | `/api/vagas/{id}` | Público | Obter detalhes de uma vaga específica pelo ID. |
 | `POST` | `/api/vagas` | `RECRUITER` | Criar nova vaga de emprego com requisitos. |
@@ -143,7 +145,7 @@ curl -X PUT http://localhost:8080/api/auth/profile   -H "Content-Type: applicati
 
 #### Exemplo de Cadastro de Vaga (cURL):
 ```bash
-curl -X POST http://localhost:8080/api/vagas   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
+curl -X POST http://localhost:8081/api/vagas   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
     "titulo": "Desenvolvedor Java Backend Sênior",
     "descricao": "Responsável pela construção de microsserviços de alto desempenho com Spring Boot.",
     "requisitosObrigatorios": ["Java 21", "Spring Boot 3", "PostgreSQL", "Docker"],
@@ -154,7 +156,7 @@ curl -X POST http://localhost:8080/api/vagas   -H "Content-Type: application/jso
 
 #### Exemplo de Alteração de Status da Vaga (cURL):
 ```bash
-curl -X PATCH http://localhost:8080/api/vagas/1/status   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
+curl -X PATCH http://localhost:8081/api/vagas/<VAGA_UUID>/status   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
     "status": "ENCERRADA"
   }'
 ```
@@ -170,21 +172,30 @@ curl -X PATCH http://localhost:8080/api/vagas/1/status   -H "Content-Type: appli
 | `GET` | `/api/candidaturas/{id}` | Autenticado | Consultar status da candidatura (usado no polling pelo candidato). |
 | `GET` | `/api/candidaturas/minhas` | `CANDIDATE` | Listar histórico de candidaturas submetidas pelo candidato autenticado. |
 | `PATCH` | `/api/candidaturas/{id}/selecionar-entrevista` | `RECRUITER` | Revelar dados de contato do candidato mediante justificativa e auditoria. |
+| `PATCH` | `/api/candidaturas/{id}/reprocessar` | `RECRUITER` | Agendar nova análise explicável, preservando a análise anterior para auditoria. Retorna `HTTP 202 Accepted`. |
 | `GET` | `/api/candidaturas/{id}/download-pdf` | Autenticado | Fazer download do PDF original do currículo submetido. |
 
 #### Exemplo de Submissão de Currículo (cURL):
 ```bash
-curl -X POST http://localhost:8080/api/candidaturas/vagas/1/submeter   -H "Authorization: Bearer <TOKEN_CANDIDATO>"   -F "arquivo=@/caminho/do/curriculo.pdf;type=application/pdf"
+curl -X POST http://localhost:8081/api/candidaturas/vagas/<VAGA_UUID>/submeter   -H "Authorization: Bearer <TOKEN_CANDIDATO>"   -F "arquivo=@/caminho/do/curriculo.pdf;type=application/pdf"
 ```
 
 #### Exemplo de Seleção para Entrevista com LGPD (cURL):
 ```bash
-curl -X PATCH http://localhost:8080/api/candidaturas/1/selecionar-entrevista   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
+curl -X PATCH http://localhost:8081/api/candidaturas/<CANDIDATURA_UUID>/selecionar-entrevista   -H "Content-Type: application/json"   -H "Authorization: Bearer <TOKEN_RECRUTADOR>"   -d '{
     "justificativa": "Candidato atende 100% dos requisitos obrigatórios com score de IA 92%."
   }'
 ```
 
 #### Exemplo de Download do PDF do Currículo (cURL):
 ```bash
-curl -X GET http://localhost:8080/api/candidaturas/1/download-pdf   -H "Authorization: Bearer <TOKEN_RECRUTADOR_OU_CANDIDATO>"   --output curriculo_baixado.pdf
+curl -X GET http://localhost:8081/api/candidaturas/<CANDIDATURA_UUID>/download-pdf   -H "Authorization: Bearer <TOKEN_RECRUTADOR_OU_CANDIDATO>"   --output curriculo_baixado.pdf
 ```
+
+#### Exemplo de Reprocessamento da Análise (cURL):
+```bash
+curl -X PATCH http://localhost:8081/api/candidaturas/<CANDIDATURA_UUID>/reprocessar \
+  -H "Authorization: Bearer <TOKEN_RECRUTADOR>"
+```
+
+Os identificadores de vagas e candidaturas são UUIDs. Para o contrato detalhado da análise por requisito, consulte [a documentação de triagem explicável](docs/triagem-explicavel.md).
